@@ -6,8 +6,8 @@ class ConservationService {
   ConservationService(this._api);
   final ApiClient _api;
 
-  Future<Page<Project>> projects({Ecosystem? ecosystem, String? status, String? cursor, int limit = 20}) async =>
-      Page.from(
+  Future<Paged<Project>> projects({Ecosystem? ecosystem, String? status, String? cursor, int limit = 20}) async =>
+      Paged.from(
         await _api.get('/app/conservation/projects', query: {
           'category': ecosystem?.api,
           'status': status,
@@ -20,7 +20,7 @@ class ConservationService {
   Future<Project> project(String id) async =>
       Project.fromJson(await _api.get<Json>('/app/conservation/projects/$id'));
 
-  Future<Page<AdoptedUnit>> myCorals({String? cursor}) async => Page.from(
+  Future<Paged<AdoptedUnit>> myCorals({String? cursor}) async => Paged.from(
         await _api.get('/app/conservation/corals/my', query: {'cursor': cursor, 'limit': 50}),
         AdoptedUnit.fromJson,
       );
@@ -33,7 +33,7 @@ class ConservationService {
   Future<ImpactSummary> impact() async =>
       ImpactSummary.fromJson(await _api.get<Json>('/app/impact/summary', auth: false));
 
-  Future<Page<NewsArticle>> news({Ecosystem? ecosystem, String? cursor}) async => Page.from(
+  Future<Paged<NewsArticle>> news({Ecosystem? ecosystem, String? cursor}) async => Paged.from(
         await _api.get('/app/news', auth: false, query: {'category': ecosystem?.api, 'cursor': cursor, 'limit': 20}),
         NewsArticle.fromJson,
       );

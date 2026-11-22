@@ -28,8 +28,8 @@ class GameService {
       VirtualPet.fromJson(await _api.post<Json>('/app/pets/$petId/equip', body: {'product_id': productId}));
 
   // Missions
-  Future<Page<EcoMission>> missions({String? cursor}) async =>
-      Page.from(await _api.get('/app/missions', query: {'cursor': cursor, 'limit': 30}), EcoMission.fromJson);
+  Future<Paged<EcoMission>> missions({String? cursor}) async =>
+      Paged.from(await _api.get('/app/missions', query: {'cursor': cursor, 'limit': 30}), EcoMission.fromJson);
 
   Future<MissionSubmission> submitMission(String missionId, String proofKey, {String? petId}) async =>
       MissionSubmission.fromJson(await _api.post<Json>('/app/missions/$missionId/submit',
@@ -43,7 +43,7 @@ class GameService {
 
   Future<void> useStreakFreeze() => _api.post('/app/inventory/streak-freeze/use');
 
-  Future<List<LeaderboardEntry>> leaderboard({String period = 'all_time', String? category}) async => Page.from(
+  Future<List<LeaderboardEntry>> leaderboard({String period = 'all_time', String? category}) async => Paged.from(
         await _api.get('/app/leaderboard', query: {'period': period, 'category': category, 'limit': 50}),
         LeaderboardEntry.fromJson,
         key: 'rankings',

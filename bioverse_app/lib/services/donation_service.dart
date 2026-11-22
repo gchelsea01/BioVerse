@@ -49,7 +49,7 @@ class DonationService {
 
   Future<Donation> detail(String id) async => Donation.fromJson(await _api.get<Json>('/app/donations/$id'));
 
-  Future<Page<Donation>> history({String? status, String? type, String? cursor}) async => Page.from(
+  Future<Paged<Donation>> history({String? status, String? type, String? cursor}) async => Paged.from(
         await _api.get('/app/donations/history', query: {
           'payment_status': status,
           'donation_type': type,

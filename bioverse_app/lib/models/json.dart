@@ -36,14 +36,14 @@ List<T> list<T>(Object? raw, T Function(Json) parse) =>
     raw is List ? raw.whereType<Map>().map((e) => parse(Map<String, dynamic>.from(e))).toList() : <T>[];
 
 /// Cursor-paginated responses: `{items: [...], next_cursor: "..."}`.
-class Page<T> {
-  const Page(this.items, this.nextCursor);
+class Paged<T> {
+  const Paged(this.items, this.nextCursor);
   final List<T> items;
   final String? nextCursor;
 
-  factory Page.from(Object? raw, T Function(Json) parse, {String key = 'items'}) {
-    if (raw is List) return Page(list(raw, parse), null);
+  factory Paged.from(Object? raw, T Function(Json) parse, {String key = 'items'}) {
+    if (raw is List) return Paged(list(raw, parse), null);
     final j = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
-    return Page(list(j[key], parse), strOrNull(j, 'next_cursor'));
+    return Paged(list(j[key], parse), strOrNull(j, 'next_cursor'));
   }
 }
