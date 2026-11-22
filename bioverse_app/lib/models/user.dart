@@ -40,6 +40,23 @@ class UserProfile {
     return (parts.first[0] + (parts.length > 1 ? parts.last[0] : '')).toUpperCase();
   }
 
+  UserProfile copyWith({int? points}) => UserProfile(
+        id: id,
+        email: email,
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        gender: gender,
+        dateOfBirth: dateOfBirth,
+        timezone: timezone,
+        currency: currency,
+        avatarUrl: avatarUrl,
+        referralCode: referralCode,
+        points: points ?? this.points,
+        lockedPoints: lockedPoints,
+        isEmailVerified: isEmailVerified,
+        createdAt: createdAt,
+      );
+
   factory UserProfile.fromJson(Json j) => UserProfile(
         id: str(j, 'id'),
         email: str(j, 'email'),
