@@ -94,7 +94,7 @@ class _PetBody extends StatelessWidget {
       const SizedBox(height: 16),
       Text('Take care of ${pet.name}', style: t.titleLarge),
       const SizedBox(height: 4),
-      Text('Each action restores health and gives a little XP.', style: t.bodySmall?.copyWith(color: AppColors.textMuted)),
+      Text('Each action keeps it healthy and gives a little XP. Missions give much more.', style: t.bodySmall?.copyWith(color: AppColors.textMuted)),
       const SizedBox(height: 10),
       _CareActions(pet: pet),
       const SizedBox(height: 16),
@@ -206,7 +206,6 @@ class _CareActionsState extends State<_CareActions> {
     try {
       final updated = await context.read<Services>().game.interact(widget.pet, type);
       session.setPet(updated);
-      session.refreshStreak();
       if (mounted) showMessage(context, doneText);
     } catch (e) {
       if (mounted) showError(context, e);
@@ -268,7 +267,7 @@ class _HowItGrows extends StatelessWidget {
         row(Icons.favorite_rounded, 'Daily care keeps it healthy', 'Health drops over time. Feed, clean, or play each day.'),
         row(Icons.flag_rounded, 'Missions give the most XP', 'XP raises its level. Levels unlock new growth stages.'),
         row(Icons.spa_rounded, 'Stages: Hatchling → Juvenile → Adult → Elder', 'Each stage changes how your buddy looks.'),
-        row(Icons.local_fire_department_rounded, 'Streaks', 'Do any eco action daily to grow your streak.'),
+        row(Icons.local_fire_department_rounded, 'Streaks', 'Each day you get a mission verified, your streak grows by one.'),
         row(Icons.storefront_rounded, 'Shop', 'Spend points on accessories, backgrounds, and streak freezes.'),
       ]),
     );
@@ -314,7 +313,7 @@ class _StreakCardState extends State<_StreakCard> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${s.current}-day streak', style: t.titleMedium),
               Text(
-                s.activeToday ? 'Done for today. Come back tomorrow!' : 'Care for your pet or finish a mission to keep it going.',
+                s.activeToday ? 'Done for today. Come back tomorrow!' : 'Complete one eco mission today to keep it going.',
                 style: t.bodySmall,
               ),
             ]),
