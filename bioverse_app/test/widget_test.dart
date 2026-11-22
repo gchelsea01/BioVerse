@@ -1,30 +1,46 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:bioverse_app/core/theme/app_theme.dart';
+import 'package:bioverse_app/core/utils/format.dart';
+import 'package:bioverse_app/core/widgets/pet_art.dart';
+import 'package:bioverse_app/models/conservation.dart';
+import 'package:bioverse_app/models/gamification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:bioverse_app/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('project parses API decimals and computes progress', () {
+    final p = Project.fromJson({
+      'id': '1',
+      'title': 'Reef',
+      'category': 'mangrove',
+      'price_per_unit_money': '3.20',
+      'target_units': 1500,
+      'funded_units_count': 420,
+      'status': 'open_for_donation',
+    });
+    expect(p.ecosystem, Ecosystem.mangrove);
+    expect(p.pricePerUnit, 3.2);
+    expect(p.progress, closeTo(0.28, 0.001));
+    expect(p.isOpen, isTrue);
+    expect(p.ecosystem.donationType, 'tree_planting');
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('missing fields do not throw', () {
+    final pet = VirtualPet.fromJson({});
+    expect(pet.stage, GrowthStage.hatchling);
+    expect(pet.health, 100);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  test('money formatting', () {
+    expect(Fmt.money(32000, 'IDR'), contains('32.000'));
+    expect(Fmt.money(3.2, 'USD'), '\$3.20');
+  });
+
+  testWidgets('placeholder pet renders without assets', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light(),
+      home: const Scaffold(body: PetArt(species: 'tree', stage: GrowthStage.adult)),
+    ));
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.byType(PetArt), findsOneWidget);
   });
 }
