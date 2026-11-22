@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/common.dart';
+import '../../core/widgets/net_image.dart';
 import '../../models/gamification.dart';
 import '../../state/services.dart';
 import '../../state/session.dart';
@@ -73,7 +75,16 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
         MaterialPageRoute(builder: (_) => SubmissionStatusScreen(mission: m, submission: receipt)),
       );
     } catch (e) {
-      if (mounted) showError(context, e);
+      if (!mounted) return;
+      final err = ApiException.from(e);
+      // The photo check runs on a separate service; a 5xx here usually means
+      // that service is down, not that the user did something wrong.
+      showError(
+        context,
+        (err.statusCode ?? 0) >= 500
+            ? ApiException('Our photo checker is unavailable right now. Your photo was not lost; please try again later.')
+            : err,
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -90,12 +101,14 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
           borderRadius: BorderRadius.circular(16),
           child: _photo != null
               ? Image.file(_photo!, height: 220, fit: BoxFit.cover)
-              : Container(
-                  height: 180,
-                  color: AppColors.mint,
-                  alignment: Alignment.center,
-                  child: Icon(missionIcon(m), size: 72, color: AppColors.primary),
-                ),
+              : m.imageUrl != null
+                  ? NetImage(m.imageUrl, height: 200, radius: 0, icon: missionIcon(m))
+                  : Container(
+                      height: 180,
+                      color: AppColors.mint,
+                      alignment: Alignment.center,
+                      child: Icon(missionIcon(m), size: 72, color: AppColors.primary),
+                    ),
         ),
         const SizedBox(height: 12),
         Row(children: [
