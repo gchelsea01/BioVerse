@@ -3,6 +3,22 @@
 API: `https://api.ourprojects.my.id/v1` (health OK, DB connected).
 Masalah yang ditemukan saat menyambungkan layar Figma ke API, urut dari yang paling berdampak.
 
+## Hasil tes live (22 Nov 2026, akun tes `bioverse.qa+…@example.com`)
+
+Semua endpoint yang dipakai app sudah dipanggil langsung. Berjalan normal: register, login, refresh, `users/me` (GET/PATCH), notifikasi, buat pet, interact (feed/clean/pet, +10 XP), streak, katalog, inventory, missions list, presign + upload ke Supabase Storage, riwayat donasi, `corals/my`, `subscriptions/my`, plans, leaderboard, projects, news, impact.
+Checkout donasi **tidak** dites karena akan membuat tagihan Xendit sungguhan; `simulate-paid` dimatikan di production.
+
+**🔴 Bug: `POST /app/missions/{id}/submit` selalu 500**
+- Production memakai `HTTPCVVerifier` (`CV_SERVICE_URL` terisi), dan panggilan ke service CV gagal. Semua error dari situ dipetakan ke `InternalServerError`.
+- Kemungkinan penyebab: service CV mati/tidak terjangkau, **atau** yang dikirim ke CV adalah `object_key` (`mission_proofs/xxx.png`), bukan URL yang bisa diunduh.
+- Saran: kirim presigned GET URL ke CV. Kalau CV gagal, simpan submission sebagai `needs_review` (jangan 500). Atau balas 503 dengan pesan jelas.
+- App sekarang menampilkan "photo checker unavailable" untuk error ini.
+
+**Perbedaan respons dengan spec**
+- `POST /pets/{id}/interact` mengembalikan objek `VirtualPet` lengkap, bukan `PetInteractionResponse`. App bisa menerima keduanya.
+- `EcoMission` mengembalikan `image_url`, `requires_camera_proof`, `cv_target_label`, dan `UserProfile` mengembalikan `current_streak`. Semua ini tidak ada di spec. Tolong tambahkan ke `openapi.yaml`.
+- Streak hanya naik dari misi yang terverifikasi; merawat pet tidak dihitung. Kalau memang disengaja tidak apa-apa, copy di app sudah disesuaikan. Tapi feedback user bilang pet "terlihat cuma streak", jadi mungkin perawatan pet juga perlu dihitung.
+
 ## Perlu diperbaiki (memblokir layar Figma)
 
 1. **`DonationDetail` tidak punya info proyek.**
@@ -31,7 +47,7 @@ Masalah yang ditemukan saat menyambungkan layar Figma ke API, urut dari yang pal
 
 6. **Stat profil.** Figma menampilkan Total Donation, Missions Completed, dan Total Points.
    → Tambahkan `GET /app/users/me/stats`. Saat ini app menghitung jumlah donasi sendiri dari list.
-7. **Field `EcoMission`** perlu `image_url` dan `estimated_minutes` (Figma menampilkan foto + "5 Minutes").
+7. **Field `EcoMission`** perlu `estimated_minutes` (Figma menampilkan "5 Minutes"). `image_url` sudah ada di respons, tapi data seed masih null.
 8. **Daftar jenis pet.** `CreatePetRequest` menerima `pet_species`/`coral_type` bebas (string).
    → Tambahkan enum atau endpoint `/app/pets/species` agar pilihan pet tidak di-hardcode di app.
 9. **Notifikasi** hanya punya `limit`, tanpa `cursor`. Tidak bisa paginasi.
