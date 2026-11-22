@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/net_image.dart';
 import '../../models/gamification.dart';
 import 'mission_detail_screen.dart';
 
@@ -32,12 +33,14 @@ class MissionTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(color: AppColors.mint, borderRadius: BorderRadius.circular(12)),
-              child: Icon(missionIcon(m), color: AppColors.primary),
-            ),
+            m.imageUrl != null
+                ? NetImage(m.imageUrl, width: 48, height: 48, icon: missionIcon(m))
+                : Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(color: AppColors.mint, borderRadius: BorderRadius.circular(12)),
+                    child: Icon(missionIcon(m), color: AppColors.primary),
+                  ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -86,6 +86,7 @@ class EcoMission {
     required this.xp,
     this.category,
     this.difficulty,
+    this.imageUrl,
   });
 
   final String id;
@@ -96,6 +97,9 @@ class EcoMission {
   final int xp;
   final String? category;
   final String? difficulty;
+
+  /// Returned by the API although not in the OpenAPI spec yet.
+  final String? imageUrl;
 
   /// Instructions arrive as one block; split numbered/new lines into steps.
   List<String> get steps => instructions
@@ -113,6 +117,7 @@ class EcoMission {
         xp: integer(j, 'xp_reward'),
         category: strOrNull(j, 'category'),
         difficulty: strOrNull(j, 'difficulty'),
+        imageUrl: strOrNull(j, 'image_url'),
       );
 }
 
