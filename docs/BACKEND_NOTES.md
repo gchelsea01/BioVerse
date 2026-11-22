@@ -37,7 +37,9 @@ Masalah yang ditemukan saat menyambungkan layar Figma ke API, urut dari yang pal
 9. **Notifikasi** hanya punya `limit`, tanpa `cursor`. Tidak bisa paginasi.
 10. **`servers` di `openapi.yaml`** masih `api.bioverse.id`/`staging-api.bioverse.id`, bukan URL deploy sebenarnya. Client hasil generate akan salah URL.
 11. **Seed data.** Baru 1 proyek (coral) dan 0 berita. Tambahkan minimal 1 proyek mangrove + 1 tree + beberapa berita untuk demo/testing.
-12. **Leaderboard** hanya dalam USD (`total_donations_usd`). User Indonesia lebih cocok IDR, atau ikut `preferred_currency_code`.
+12. **Kurva XP pet** tidak diekspos. App mengasumsikan 100 XP per level untuk progress bar. Tambahkan `xp_to_next_level` di `VirtualPet`.
+13. **Google Sign-In** butuh OAuth client ID Android (SHA-1) dari tim. Tombol Google belum dipasang supaya tidak ada tombol mati.
+14. **Leaderboard** hanya dalam USD (`total_donations_usd`). User Indonesia lebih cocok IDR, atau ikut `preferred_currency_code`.
 
 ## Catatan client
 - Kode di `lib/data/dtos` (hasil `swagger_parser`) butuh paket `retrofit` + `build_runner` dan tidak dipakai app ini. App memakai layer API sendiri di `lib/core/network` + `lib/models`, dengan parsing toleran (field null tidak membuat crash). Folder `lib/data/dtos` boleh dihapus atau dibiarkan.
