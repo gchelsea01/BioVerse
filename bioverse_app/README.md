@@ -11,7 +11,7 @@ flutter run
 
 - API default: `https://api.ourprojects.my.id/v1`. Untuk backend lokal (emulator):
   `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/v1`
-- Di Windows, aktifkan **Developer Mode** (Settings → System → For developers) supaya plugin bisa di-build (butuh symlink).
+- Kalau di Windows muncul error *"Building with plugins requires symlink support"*, aktifkan **Developer Mode** (Settings → System → For developers).
 
 ## Struktur
 
