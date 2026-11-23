@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/badges.dart';
 import '../../core/widgets/net_image.dart';
 import '../../models/gamification.dart';
 import 'mission_detail_screen.dart';
@@ -52,15 +53,24 @@ class MissionTile extends StatelessWidget {
                   const SizedBox(width: 10),
                   const Icon(Icons.bolt_rounded, size: 14, color: AppColors.primary),
                   Text(' +${m.xp} XP', style: t.labelMedium),
+                  if (m.estimatedMinutes != null) ...[
+                    const SizedBox(width: 10),
+                    const Icon(Icons.schedule_rounded, size: 14, color: AppColors.textMuted),
+                    Text(' ${m.estimatedMinutes} min', style: t.labelMedium),
+                  ],
                 ]),
               ]),
             ),
             const SizedBox(width: 8),
-            FilledButton(
-              onPressed: () => _open(context),
-              style: FilledButton.styleFrom(minimumSize: const Size(72, 40), padding: const EdgeInsets.symmetric(horizontal: 16)),
-              child: const Text('Start'),
-            ),
+            if (m.completedToday)
+              StatusChip(m.lastStatus == 'needs_review' ? 'In review' : 'Done today',
+                  tone: m.lastStatus == 'needs_review' ? Tone.warning : Tone.success)
+            else
+              FilledButton(
+                onPressed: () => _open(context),
+                style: FilledButton.styleFrom(minimumSize: const Size(72, 40), padding: const EdgeInsets.symmetric(horizontal: 16)),
+                child: const Text('Start'),
+              ),
           ]),
         ),
       ),

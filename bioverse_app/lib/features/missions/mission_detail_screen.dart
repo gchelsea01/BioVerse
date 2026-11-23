@@ -115,7 +115,10 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
           Expanded(child: InfoTile(icon: Icons.toll_rounded, label: 'Points', value: '+${m.points}')),
           const SizedBox(width: 8),
           Expanded(child: InfoTile(icon: Icons.bolt_rounded, label: 'Pet XP', value: '+${m.xp}')),
-          if (m.difficulty != null) ...[
+          if (m.estimatedMinutes != null) ...[
+            const SizedBox(width: 8),
+            Expanded(child: InfoTile(icon: Icons.schedule_rounded, label: 'Time', value: '${m.estimatedMinutes} min')),
+          ] else if (m.difficulty != null) ...[
             const SizedBox(width: 8),
             Expanded(child: InfoTile(icon: Icons.speed_rounded, label: 'Level', value: m.difficulty!)),
           ],
@@ -150,7 +153,9 @@ class _MissionDetailScreenState extends State<MissionDetailScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: _photo == null
+          child: m.completedToday
+              ? const FilledButton(onPressed: null, child: Text('Done for today – come back tomorrow'))
+              : _photo == null
               ? FilledButton.icon(
                   onPressed: _chooseSource,
                   icon: const Icon(Icons.photo_camera_rounded),
