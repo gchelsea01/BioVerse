@@ -1,0 +1,35 @@
+{
+ "items": [
+  {
+   "id": "0193297a-96e0-7988-9271-e0e649ce4501",
+   "title": "Bibit Karang Pemuteran Tumbuh 3 Kali Lebih Cepat Berkat Teknologi Biorock",
+   "category": "coral",
+   "summary": "Monitoring terbaru di Teluk Pemuteran menunjukkan fragmen Acropora berkembang pesat dengan tingkat kelangsungan hidup mencapai 95%.",
+   "content": "Tim konservasi lokal di Teluk Pemuteran, Bali Utara, merilis laporan pemantauan triwulan pertama tahun 2026. Melalui struktur Biorock bertegangan rendah, endapan mineral kalsium karbonat memperkuat kerangka karang yang baru diadopsi oleh para donatur BioVerse. Pertumbuhan cabang terbukti mencapai 3 kali kecepatan alami, menarik kembali anemon dan biota laut langka.",
+   "thumbnail_url": "https://images.unsplash.com/photo-1546026423-cc4642628d2b",
+   "is_featured": true,
+   "published_at": "2026-11-21T09:26:23+07:00"
+  },
+  {
+   "id": "0193297a-96e0-7988-9271-e0e649ce4502",
+   "title": "Benteng Hijau Pesisir: 500 Bibit Mangrove Rhizophora Ditanam di Tanjung Lesung",
+   "category": "mangrove",
+   "summary": "Kolaborasi relawan dan kelompok tani pesisir memperkuat garis pertahanan alami Banten dari ancaman abrasi Selat Sunda.",
+   "content": "Aksi penanaman mangrove di pesisir Tanjung Lesung berhasil menancapkan 500 bibit mangrove berakar tunjang kuat. Program ini didanai melalui donasi B2C dan program ESG korporat di platform BioVerse. Selain menahan erosi pantai, zona mangrove ini diproyeksikan menyerap hingga 12 ton CO2 per hektar setiap tahunnya.",
+   "thumbnail_url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5",
+   "is_featured": false,
+   "published_at": "2026-11-18T09:26:23+07:00"
+  },
+  {
+   "id": "0193297a-96e0-7988-9271-e0e649ce4503",
+   "title": "Restorasi Hutan Rinjani Mengembalikan Sumber Mata Air Warga Sembalun",
+   "category": "tree",
+   "summary": "Pohon beringin dan kemiri yang ditanam tahun lalu kini mulai menahan limpasan air hujan di hulu lereng Rinjani.",
+   "content": "Laporan dari tim lapangan Rinjani menunjukkan kemajuan menggembirakan. Kanopi pepohonan yang mulai rimbun membantu meningkatkan resapan air tanah, sehingga debit mata air di perkampungan kaki bukit tetap stabil menjelang musim kemarau. Donatur kini dapat melihat foto berkala progres pohon adopsi mereka di aplikasi BioVerse.",
+   "thumbnail_url": "https://images.unsplash.com/photo-1448375240586-882707db888b",
+   "is_featured": false,
+   "published_at": "2026-11-16T09:26:23+07:00"
+  }
+ ],
+ "next_cursor": null
+}

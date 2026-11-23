@@ -1,0 +1,19 @@
+{
+ "items": [
+  {
+   "id": "01a20668-7311-77e1-b659-4fb8fa0016f9",
+   "mission_id": "0193297a-96e0-7988-9271-e0e649ce4803",
+   "mission_title": "Hemat Energi Listrik Siang Hari",
+   "mission_category": "energy_saving",
+   "pet_id": "01a202c3-cf6b-7cd8-a0e8-d540a65eefe7",
+   "proof_image_url": "mission_proofs/8f556e3f-2ec6-4146-87c3-267266d55fb5.png",
+   "status": "verified",
+   "awarded_points": 40,
+   "awarded_xp": 20,
+   "cv_confidence_score": 0.92,
+   "rejection_reason": null,
+   "submitted_at": "2026-11-23T03:17:18Z",
+   "verified_at": "2026-11-23T03:17:18Z"
+  }
+ ]
+}

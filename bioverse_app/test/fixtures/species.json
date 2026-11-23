@@ -1,0 +1,74 @@
+[
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5",
+  "description": "Penjaga terumbu karang yang tenang, tangguh mengarungi samudera luas.",
+  "element": "ocean",
+  "name": "Penyu Hijau (Sea Turtle)",
+  "rarity": "common",
+  "species_id": "turtle"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1524704654690-b56c05c78a00",
+  "description": "Sahabat setia anemon laut yang ceria, gesit, dan penuh semangat.",
+  "element": "reef",
+  "name": "Ikan Badut (Clownfish)",
+  "rarity": "common",
+  "species_id": "clownfish"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c",
+  "description": "Penjelajah pelagis yang anggun dengan sayap lebar nan menawan.",
+  "element": "pelagic",
+  "name": "Pari Manta (Manta Ray)",
+  "rarity": "rare",
+  "species_id": "manta_ray"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1559827291-72ee739d0d9a",
+  "description": "Penjaga garis pantai dan akar bakau yang pantang menyerah.",
+  "element": "mangrove",
+  "name": "Kepiting Bakau (Mangrove Crab)",
+  "rarity": "common",
+  "species_id": "crab"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1546026423-cc4642628d2b",
+  "description": "Penghuni padang lamun yang tenang, setia, dan eksotis.",
+  "element": "seagrass",
+  "name": "Kuda Laut (Seahorse)",
+  "rarity": "rare",
+  "species_id": "seahorse"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1549608276-5786777e6587",
+  "description": "Petani hutan sejati yang menebar benih dan menjaga kanopi pepohonan tinggi.",
+  "element": "canopy",
+  "name": "Burung Rangkong (Hornbill)",
+  "rarity": "rare",
+  "species_id": "hornbill"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1484406566174-9da000fda645",
+  "description": "Sahabat rimba yang lincah, waspada, dan menjaga keseimbangan vegetasi lantai hutan.",
+  "element": "forest",
+  "name": "Kancil Hutan (Forest Deer)",
+  "rarity": "common",
+  "species_id": "deer"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9",
+  "description": "Penjaga rimba tropis nusantara yang cerdas, bijak, dan penuh kasih sayang.",
+  "element": "jungle",
+  "name": "Orangutan (Forest Guardian)",
+  "rarity": "epic",
+  "species_id": "orangutan"
+ },
+ {
+  "avatar_asset_url": "https://images.unsplash.com/photo-1589656966895-2f33e7653819",
+  "description": "Pemanjat pohon ulung penjelajah hutan tropis yang tangguh dan ceria.",
+  "element": "highland",
+  "name": "Beruang Madu (Sun Bear)",
+  "rarity": "rare",
+  "species_id": "sun_bear"
+ }
+]
