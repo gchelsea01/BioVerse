@@ -37,7 +37,20 @@ class Donation {
     this.paidAt,
     this.expiredAt,
     this.createdAt,
+    this.projectId,
+    this.projectTitle,
+    this.projectCategory,
+    this.imageUrl,
+    this.locationName,
+    this.quantity = 0,
   });
+
+  final String? projectId;
+  final String? projectTitle;
+  final String? projectCategory;
+  final String? imageUrl;
+  final String? locationName;
+  final int quantity;
 
   final String id;
   final String type;
@@ -60,7 +73,8 @@ class Donation {
 
   String get typeLabel => switch (type) {
         'coral_adoption' => 'Coral adoption',
-        'tree_planting' => 'Tree / mangrove planting',
+        'tree_planting' => 'Tree planting',
+        'mangrove_planting' => 'Mangrove planting',
         'bio_shield_addon' => 'Bio-Shield add-on',
         'maintenance' => 'Monthly maintenance',
         _ => 'General support',
@@ -82,6 +96,12 @@ class Donation {
         paidAt: date(j, 'paid_at'),
         expiredAt: date(j, 'expired_at'),
         createdAt: date(j, 'created_at'),
+        projectId: strOrNull(j, 'project_id'),
+        projectTitle: strOrNull(j, 'project_title'),
+        projectCategory: strOrNull(j, 'project_category'),
+        imageUrl: strOrNull(j, 'image_url'),
+        locationName: strOrNull(j, 'location_name'),
+        quantity: integer(j, 'quantity'),
       );
 }
 
