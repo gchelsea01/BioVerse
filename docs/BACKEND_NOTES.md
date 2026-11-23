@@ -1,61 +1,37 @@
 # Catatan Backend untuk App Android
 
-API: `https://api.ourprojects.my.id/v1` (health OK, DB connected).
-Masalah yang ditemukan saat menyambungkan layar Figma ke API, urut dari yang paling berdampak.
+API: `https://api.ourprojects.my.id/v1`. Terakhir dicek 23 Nov 2026 pada backend commit `feca39d` (sudah ter-deploy), memakai akun tes `bioverse.qa+…@example.com`.
 
-## Hasil tes live (22 Nov 2026, akun tes `bioverse.qa+…@example.com`)
+## Masih terbuka
 
-Semua endpoint yang dipakai app sudah dipanggil langsung. Berjalan normal: register, login, refresh, `users/me` (GET/PATCH), notifikasi, buat pet, interact (feed/clean/pet, +10 XP), streak, katalog, inventory, missions list, presign + upload ke Supabase Storage, riwayat donasi, `corals/my`, `subscriptions/my`, plans, leaderboard, projects, news, impact.
-Checkout donasi **tidak** dites karena akan membuat tagihan Xendit sungguhan; `simulate-paid` dimatikan di production.
+1. **`completed_today` dan `my_last_submission_status` di `GET /app/missions` selalu `false`/`null`.**
+   - Penyebab: di `ListActiveMissionsForUserRow`, `MyLastSubmissionStatus` bertipe `string`. Untuk misi yang belum pernah di-submit, subquery-nya `NULL`, sehingga `rows.Scan` gagal. Akibatnya seluruh query error, lalu handler diam-diam fallback ke `rawMissions` tanpa kedua field itu.
+   - Perbaikan: `COALESCE((SELECT s.status::text ...), '')` di query, atau override sqlc ke `pgtype.Text`. Error di handler juga sebaiknya di-log, jangan ditelan.
+   - Catatan tambahan: `completed_today` memakai `CURRENT_DATE` (tanggal server, UTC), sedangkan `submission_date` memakai tanggal lokal user. Antara 00:00–07:00 WIB hasilnya bisa salah.
+   - *Sementara:* app mengisi kedua field ini sendiri dari `GET /app/mission-submissions/my`.
 
-**🔴 Bug: `POST /app/missions/{id}/submit` selalu 500**
-- Production memakai `HTTPCVVerifier` (`CV_SERVICE_URL` terisi), dan panggilan ke service CV gagal. Semua error dari situ dipetakan ke `InternalServerError`.
-- Kemungkinan penyebab: service CV mati/tidak terjangkau, **atau** yang dikirim ke CV adalah `object_key` (`mission_proofs/xxx.png`), bukan URL yang bisa diunduh.
-- Saran: kirim presigned GET URL ke CV. Kalau CV gagal, simpan submission sebagai `needs_review` (jangan 500). Atau balas 503 dengan pesan jelas.
-- App sekarang menampilkan "photo checker unavailable" untuk error ini.
+2. **`units/my` mengarang laporan foto.** Kalau sebuah unit belum punya milestone asli, handler membuat 3 milestone palsu: foto stok Unsplash, `is_verified_healthy: true`, caption "Bulan 1/3/6", dan `captured_at` di masa depan. Untuk fitur transparansi, ini menyesatkan.
+   - Perbaikan: kirim `milestones: []` saja (atau milestone dengan `is_placeholder: true`).
+   - *Sementara:* app menganggap laporan dengan tanggal di masa depan sebagai "Upcoming", bukan "received".
 
-**Perbedaan respons dengan spec**
-- `POST /pets/{id}/interact` mengembalikan objek `VirtualPet` lengkap, bukan `PetInteractionResponse`. App bisa menerima keduanya.
-- `EcoMission` mengembalikan `image_url`, `requires_camera_proof`, `cv_target_label`, dan `UserProfile` mengembalikan `current_streak`. Semua ini tidak ada di spec. Tolong tambahkan ke `openapi.yaml`.
-- Streak hanya naik dari misi yang terverifikasi; merawat pet tidak dihitung. Kalau memang disengaja tidak apa-apa, copy di app sudah disesuaikan. Tapi feedback user bilang pet "terlihat cuma streak", jadi mungkin perawatan pet juga perlu dihitung.
+3. **Fallback CV meloloskan foto apa pun.** Karena service CV di production mati, `StubCVVerifier` memverifikasi semua foto (confidence 0.92). Di tes, sebuah PNG polos berwarna hijau lolos dan mendapat poin. Untuk demo tidak apa-apa, tapi user bisa farming poin.
+   - Saran: nyalakan service CV, atau batasi fallback ke environment non-production. Pakai `needs_review` dan sediakan halaman review di admin.
 
-## Perlu diperbaiki (memblokir layar Figma)
+4. **Pesan receipt submit misi tidak cocok.** Status sudah `verified`, tapi `message` masih "Computer vision verification in progress."
 
-1. **`DonationDetail` tidak punya info proyek.**
-   Riwayat donasi di Figma menampilkan nama proyek, lokasi tanam, jumlah fragmen, dan "time since planting". Response `/app/donations/history` hanya berisi uang dan status.
-   → Tambahkan `project_id`, `project_title`, `project_category`, `image_url`, `quantity`, `planted_at` (atau `adopted_coral_ids`).
-   *Sementara:* app memakai `/app/conservation/corals/my` untuk detail karang. Donasi pohon/mangrove hanya tampil sebagai transaksi.
+## Sudah beres (diverifikasi di API live)
+- `POST /missions/{id}/submit` tidak lagi 500; balasannya `202` dan poin/XP langsung masuk.
+- `GET /users/me/stats` 200, dan `missions_completed` naik setelah misi terverifikasi.
+- Merawat pet menaikkan streak; `xp_to_next_level` tersedia; `GET /pets/species` mencakup satwa laut, mangrove, dan hutan.
+- Proyek memiliki `location_name`, koordinat, dan `contributors_count`. Lokasi mangrove Tanjung Lesung sudah benar (Banten).
+- Seed: 3 proyek (coral, mangrove, tree), 3 berita, dan 4 misi resmi dengan foto + durasi (duplikat sudah dihapus).
+- Endpoint `GET /mission-submissions/my`, `GET /conservation/units/my`, dan notifikasi dengan cursor sudah tersedia.
+- Tipe donasi `mangrove_planting`, plus info proyek di detail/riwayat donasi.
 
-2. **Tidak ada `DonationType` untuk mangrove.**
-   `ProjectCategory` punya `mangrove`, tapi `DonationType` hanya `coral_adoption`, `tree_planting`, dan lainnya.
-   → Tambahkan `mangrove_planting`, atau satu tipe generik `unit_adoption` yang mengikuti kategori proyek.
-   *Sementara:* proyek mangrove dikirim sebagai `tree_planting`.
-
-3. **`/app/conservation/corals/my` hanya untuk karang.**
-   Tidak ada endpoint "pohon/mangrove saya" beserta foto berkala.
-   → Generalisasi menjadi `/app/conservation/units/my` untuk semua kategori, termasuk timeline foto bulan 1/3/6.
-
-4. **Misi tidak punya riwayat submission per user.**
-   Hanya ada `GET /mission-submissions/{id}`, jadi app tidak tahu misi mana yang sudah dikerjakan, dan "Missions Completed" di Profile tidak bisa dihitung.
-   → Tambahkan `GET /app/mission-submissions/my`, atau field `my_last_submission_status` di `EcoMission`.
-
-5. **`ConservationProject` tidak punya lokasi.**
-   Figma menampilkan "Planting Location: Raja Ampat".
-   → Tambahkan `location_name` (dan opsional `lat`/`lng`). Field `contributors_count` juga dipakai di Figma.
-
-## Sebaiknya ditambah
-
-6. **Stat profil.** Figma menampilkan Total Donation, Missions Completed, dan Total Points.
-   → Tambahkan `GET /app/users/me/stats`. Saat ini app menghitung jumlah donasi sendiri dari list.
-7. **Field `EcoMission`** perlu `estimated_minutes` (Figma menampilkan "5 Minutes"). `image_url` sudah ada di respons, tapi data seed masih null.
-8. **Daftar jenis pet.** `CreatePetRequest` menerima `pet_species`/`coral_type` bebas (string).
-   → Tambahkan enum atau endpoint `/app/pets/species` agar pilihan pet tidak di-hardcode di app.
-9. **Notifikasi** hanya punya `limit`, tanpa `cursor`. Tidak bisa paginasi.
-10. **`servers` di `openapi.yaml`** masih `api.bioverse.id`/`staging-api.bioverse.id`, bukan URL deploy sebenarnya. Client hasil generate akan salah URL.
-11. **Seed data.** Baru 1 proyek (coral) dan 0 berita. Tambahkan minimal 1 proyek mangrove + 1 tree + beberapa berita untuk demo/testing.
-12. **Kurva XP pet** tidak diekspos. App mengasumsikan 100 XP per level untuk progress bar. Tambahkan `xp_to_next_level` di `VirtualPet`.
-13. **Google Sign-In** butuh OAuth client ID Android (SHA-1) dari tim. Tombol Google belum dipasang supaya tidak ada tombol mati.
-14. **Leaderboard** hanya dalam USD (`total_donations_usd`). User Indonesia lebih cocok IDR, atau ikut `preferred_currency_code`.
+## Belum bisa diverifikasi
+- Checkout dan field proyek di riwayat donasi: checkout membuat tagihan Xendit sungguhan, dan `simulate-paid` dimatikan di production. Untuk mengetes, nyalakan `ALLOW_SIMULATE_PAID` di staging, atau lakukan pembayaran QRIS nominal kecil.
+- Google Sign-In: butuh OAuth client ID Android (SHA-1) dari tim.
 
 ## Catatan client
-- Kode di `lib/data/dtos` (hasil `swagger_parser`) butuh paket `retrofit` + `build_runner` dan tidak dipakai app ini. App memakai layer API sendiri di `lib/core/network` + `lib/models`, dengan parsing toleran (field null tidak membuat crash). Folder `lib/data/dtos` boleh dihapus atau dibiarkan.
+- Kode di `lib/data/dtos` (hasil `swagger_parser`) tidak dipakai. App memakai layer API sendiri di `lib/core/network` + `lib/models` dengan parsing toleran.
+- `test/api_contract_test.dart` mem-parse respons asli yang disimpan di `test/fixtures`. Kalau bentuk respons backend berubah, test ini yang gagal duluan.
