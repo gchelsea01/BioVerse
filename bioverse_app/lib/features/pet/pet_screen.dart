@@ -6,7 +6,6 @@ import '../../core/widgets/async_view.dart';
 import '../../core/widgets/badges.dart';
 import '../../core/widgets/common.dart';
 import '../../core/widgets/pet_art.dart';
-import '../../models/conservation.dart';
 import '../../models/gamification.dart';
 import '../../models/json.dart';
 import '../../state/services.dart';
@@ -60,7 +59,7 @@ class _PetBody extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     return ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [
       HabitatBackground(
-        ecosystem: Ecosystem.parse(pet.species),
+        ecosystem: pet.ecosystem,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(children: [
@@ -71,7 +70,7 @@ class _PetBody extends StatelessWidget {
             ]),
             PetArt(species: pet.species, stage: pet.stage, health: pet.health, size: 180),
             Text(pet.name, style: t.headlineSmall),
-            Text('${pet.coralType.isEmpty ? Ecosystem.parse(pet.species).label : pet.coralType} • ${pet.stage.label}',
+            Text('${pet.coralType.isEmpty ? pet.ecosystem.label : pet.coralType} • ${pet.stage.label}',
                 style: t.bodyMedium?.copyWith(color: AppColors.textMuted)),
           ]),
         ),
@@ -183,6 +182,7 @@ class _StageTrack extends StatelessWidget {
                   fontWeight: s == stage ? FontWeight.w800 : FontWeight.w500,
                   color: s == stage ? AppColors.navy : AppColors.textMuted,
                 )),
+            Text('Lv ${const [1, 5, 10, 20][s.index]}', style: t.labelSmall?.copyWith(color: AppColors.textMuted, fontSize: 10)),
           ]),
         ),
     ]);
@@ -206,6 +206,7 @@ class _CareActionsState extends State<_CareActions> {
     try {
       final updated = await context.read<Services>().game.interact(widget.pet, type);
       session.setPet(updated);
+      session.refreshStreak();
       if (mounted) showMessage(context, doneText);
     } catch (e) {
       if (mounted) showError(context, e);
@@ -266,8 +267,8 @@ class _HowItGrows extends StatelessWidget {
         const SizedBox(height: 4),
         row(Icons.favorite_rounded, 'Daily care keeps it healthy', 'Health drops over time. Feed, clean, or play each day.'),
         row(Icons.flag_rounded, 'Missions give the most XP', 'XP raises its level. Levels unlock new growth stages.'),
-        row(Icons.spa_rounded, 'Stages: Hatchling → Juvenile → Adult → Elder', 'Each stage changes how your buddy looks.'),
-        row(Icons.local_fire_department_rounded, 'Streaks', 'Each day you get a mission verified, your streak grows by one.'),
+        row(Icons.spa_rounded, 'Stages: Hatchling → Juvenile → Adult → Elder', 'Juvenile at level 5, Adult at 10, Elder at 20. Each stage changes how your buddy looks.'),
+        row(Icons.local_fire_department_rounded, 'Streaks', 'Care for your pet or finish a mission each day to grow your streak.'),
         row(Icons.storefront_rounded, 'Shop', 'Spend points on accessories, backgrounds, and streak freezes.'),
       ]),
     );
@@ -313,7 +314,7 @@ class _StreakCardState extends State<_StreakCard> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${s.current}-day streak', style: t.titleMedium),
               Text(
-                s.activeToday ? 'Done for today. Come back tomorrow!' : 'Complete one eco mission today to keep it going.',
+                s.activeToday ? 'Done for today. Come back tomorrow!' : 'Care for your pet or finish a mission today to keep it going.',
                 style: t.bodySmall,
               ),
             ]),
