@@ -126,7 +126,11 @@ class _MilestoneCard extends StatelessWidget {
                 ]),
                 const SizedBox(height: 4),
                 Text(
-                  done ? 'Photographed ${Fmt.date(u!.verifiedAt)}' : 'Expected around ${Fmt.date(expected)}',
+                  done
+                      ? 'Photographed ${Fmt.date(u!.verifiedAt)}'
+                      : (expected != null && expected.isBefore(DateTime.now()))
+                          ? 'Scheduled ${Fmt.date(expected)} – waiting for the field team to upload'
+                          : 'Expected around ${Fmt.date(expected)}',
                   style: t.bodySmall?.copyWith(color: AppColors.textMuted),
                 ),
                 if (done) ...[
