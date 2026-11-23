@@ -199,8 +199,11 @@ class MilestoneUpdate {
   final String? notes;
   final DateTime? verifiedAt;
 
-  /// A report dated in the future is a placeholder, not a real field photo.
-  bool get isReceived => verifiedAt != null && !verifiedAt!.isAfter(DateTime.now());
+  /// The backend sends `scheduled` placeholders for reports not taken yet.
+  bool get isScheduled => healthStatus == 'scheduled';
+
+  /// A real field photo: not a placeholder and not dated in the future.
+  bool get isReceived => !isScheduled && verifiedAt != null && !verifiedAt!.isAfter(DateTime.now());
 
   factory MilestoneUpdate.fromJson(Json j) => MilestoneUpdate(
         month: integer(j, 'milestone_month'),

@@ -69,13 +69,17 @@ void main() {
       'milestones': [
         {'milestone_month': 3, 'media_url': 'b', 'health_status': 'healthy', 'captured_at': now.add(const Duration(days: 50)).toIso8601String()},
         {'milestone_month': 1, 'media_url': 'a', 'health_status': 'healthy', 'captured_at': now.subtract(const Duration(days: 10)).toIso8601String()},
+        // Placeholder the backend sends before the field team visits; date already passed.
+        {'milestone_month': 6, 'media_url': 'c', 'health_status': 'scheduled', 'is_verified_healthy': false,
+         'captured_at': now.subtract(const Duration(days: 1)).toIso8601String()},
       ],
     });
     expect(unit.ecosystem, Ecosystem.mangrove);
     expect(unit.quantity, 3);
-    expect(unit.milestones.map((m) => m.month), [1, 3]);
-    expect(unit.milestones.first.isReceived, isTrue);
-    expect(unit.milestones.last.isReceived, isFalse);
+    expect(unit.milestones.map((m) => m.month), [1, 3, 6]);
+    expect(unit.milestones[0].isReceived, isTrue);
+    expect(unit.milestones[1].isReceived, isFalse);
+    expect(unit.milestones[2].isReceived, isFalse);
   });
 
   test('missing completed_today is filled from submissions', () {
