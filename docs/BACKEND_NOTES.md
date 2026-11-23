@@ -1,25 +1,21 @@
 # Catatan Backend untuk App Android
 
-API: `https://api.ourprojects.my.id/v1`. Terakhir dicek 23 Nov 2026 pada backend commit `feca39d` (sudah ter-deploy), memakai akun tes `bioverse.qa+…@example.com`.
+API: `https://api.ourprojects.my.id/v1`. Terakhir dicek 23 Nov 2026 pada backend commit `e8f1166` (sudah ter-deploy), memakai akun tes `bioverse.qa+…@example.com`.
 
 ## Masih terbuka
 
-1. **`completed_today` dan `my_last_submission_status` di `GET /app/missions` selalu `false`/`null`.**
-   - Penyebab: di `ListActiveMissionsForUserRow`, `MyLastSubmissionStatus` bertipe `string`. Untuk misi yang belum pernah di-submit, subquery-nya `NULL`, sehingga `rows.Scan` gagal. Akibatnya seluruh query error, lalu handler diam-diam fallback ke `rawMissions` tanpa kedua field itu.
-   - Perbaikan: `COALESCE((SELECT s.status::text ...), '')` di query, atau override sqlc ke `pgtype.Text`. Error di handler juga sebaiknya di-log, jangan ditelan.
-   - Catatan tambahan: `completed_today` memakai `CURRENT_DATE` (tanggal server, UTC), sedangkan `submission_date` memakai tanggal lokal user. Antara 00:00–07:00 WIB hasilnya bisa salah.
-   - *Sementara:* app mengisi kedua field ini sendiri dari `GET /app/mission-submissions/my`.
+1. **Fallback CV masih auto-approve di production.** Sekarang sudah ada guard `CV_FALLBACK_AUTO_APPROVE`, tapi nilai default-nya `true`. Tes 23 Nov: PNG polos berwarna hijau tetap `verified` dan mendapat +50 poin.
+   - Kalau fitur ini sudah dipakai user sungguhan, set `CV_FALLBACK_AUTO_APPROVE=false` di server (submission akan masuk `needs_review`) dan sediakan halaman review di admin. Atau nyalakan service CV.
 
-2. **`units/my` mengarang laporan foto.** Kalau sebuah unit belum punya milestone asli, handler membuat 3 milestone palsu: foto stok Unsplash, `is_verified_healthy: true`, caption "Bulan 1/3/6", dan `captured_at` di masa depan. Untuk fitur transparansi, ini menyesatkan.
-   - Perbaikan: kirim `milestones: []` saja (atau milestone dengan `is_placeholder: true`).
-   - *Sementara:* app menganggap laporan dengan tanggal di masa depan sebagai "Upcoming", bukan "received".
+2. **`completed_today` memakai `CURRENT_DATE` (tanggal server, UTC)**, sedangkan `submission_date` memakai tanggal lokal user. Akibatnya, untuk misi yang di-submit antara 00:00–07:00 WIB, `completed_today` bisa `false` padahal submit ulang ditolak 409.
+   - Perbaikan: bandingkan dengan tanggal lokal user, bukan `CURRENT_DATE`.
 
-3. **Fallback CV meloloskan foto apa pun.** Karena service CV di production mati, `StubCVVerifier` memverifikasi semua foto (confidence 0.92). Di tes, sebuah PNG polos berwarna hijau lolos dan mendapat poin. Untuk demo tidak apa-apa, tapi user bisa farming poin.
-   - Saran: nyalakan service CV, atau batasi fallback ke environment non-production. Pakai `needs_review` dan sediakan halaman review di admin.
-
-4. **Pesan receipt submit misi tidak cocok.** Status sudah `verified`, tapi `message` masih "Computer vision verification in progress."
+3. **`/v1/health` sepertinya di-cache.** `timestamp` dan `uptime` di respons tertinggal beberapa jam, jadi endpoint ini tidak bisa dipakai untuk memastikan deploy.
 
 ## Sudah beres (diverifikasi di API live)
+- `completed_today` / `my_last_submission_status` di `GET /missions` sudah terisi (fix `COALESCE`).
+- Pesan receipt submit misi sudah sesuai status ("Proof photo verified successfully.").
+- `units/my` tidak lagi mengarang foto "verified". Placeholder sekarang `health_status: "scheduled"`, `is_verified_healthy: false`, memakai foto proyek. App tidak pernah menghitungnya sebagai laporan diterima.
 - `POST /missions/{id}/submit` tidak lagi 500; balasannya `202` dan poin/XP langsung masuk.
 - `GET /users/me/stats` 200, dan `missions_completed` naik setelah misi terverifikasi.
 - Merawat pet menaikkan streak; `xp_to_next_level` tersedia; `GET /pets/species` mencakup satwa laut, mangrove, dan hutan.
