@@ -12,35 +12,47 @@ import '../../state/services.dart';
 
 const _milestones = [1, 3, 6];
 
-/// Growth timeline. Each report is labelled "Month N" with its date and
-/// "Report x of 3", answering the usability question "is this the 2nd or
-/// 3rd month?".
+/// Growth timeline. Each report is labelled "Month N", "Report x of 3" and its
+/// date, answering the usability question "is this month 2 or month 3?".
+/// Reports dated in the future are shown as expected, never as received.
 class AdoptedUnitScreen extends StatelessWidget {
   const AdoptedUnitScreen({super.key, required this.unit});
   final AdoptedUnit unit;
+
+  Future<List<MilestoneUpdate>> _load(BuildContext context) async {
+    if (unit.milestones.isNotEmpty || unit.ecosystem != Ecosystem.coral) return unit.milestones;
+    return context.read<Services>().conservation.timeline(unit.id);
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final u = unit;
+    final unitLabel = u.quantity > 1 ? '${u.quantity} ${u.ecosystem.unitName}s' : u.ecosystem.unitName;
     return Scaffold(
-      appBar: AppBar(title: Text(u.nickname ?? 'My coral')),
+      appBar: AppBar(title: Text(u.nickname ?? 'My ${u.ecosystem.label.toLowerCase()}')),
       body: AsyncView<List<MilestoneUpdate>>(
-        load: () => context.read<Services>().conservation.timeline(u.id),
+        load: () => _load(context),
         builder: (context, updates, reload) {
           final byMonth = {for (final m in updates) m.month: m};
+          final received = updates.where((m) => m.isReceived).length;
           return RefreshIndicator(
             onRefresh: reload,
             child: ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [
               Panel(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
-                    Expanded(child: Text(u.projectName, style: t.titleMedium)),
+                    EcosystemTag(u.ecosystem),
+                    const Spacer(),
                     StatusChip.forStatus(u.healthStatus),
                   ]),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
+                  Text(u.projectName, style: t.titleMedium),
+                  const SizedBox(height: 6),
                   KeyValue('Species', u.speciesName),
-                  KeyValue('Fragment code', u.code),
+                  KeyValue('Adopted', unitLabel),
+                  if (u.locationName != null) KeyValue('Location', u.locationName!),
+                  KeyValue('Unit code', u.code),
                   if (u.frameTag != null) KeyValue('Frame tag', u.frameTag!),
                   KeyValue('Planted on', Fmt.date(u.plantedAt)),
                   KeyValue('Time since planting', Fmt.since(u.plantedAt)),
@@ -51,7 +63,7 @@ class AdoptedUnitScreen extends StatelessWidget {
               Text('Growth reports', style: t.titleLarge),
               const SizedBox(height: 4),
               Text(
-                '${updates.length} of ${_milestones.length} reports received. Field teams photograph your coral at month 1, 3 and 6.',
+                '$received of ${_milestones.length} reports received. Field teams photograph your $unitLabel at month 1, 3 and 6.',
                 style: t.bodySmall?.copyWith(color: AppColors.textMuted),
               ),
               const SizedBox(height: 12),
@@ -60,7 +72,7 @@ class AdoptedUnitScreen extends StatelessWidget {
                   month: _milestones[i],
                   index: i + 1,
                   update: byMonth[_milestones[i]],
-                  expected: u.plantedAt?.add(Duration(days: 30 * _milestones[i])),
+                  plantedAt: u.plantedAt ?? u.createdAt,
                   isLast: i == _milestones.length - 1,
                 ),
             ]),
@@ -72,18 +84,19 @@ class AdoptedUnitScreen extends StatelessWidget {
 }
 
 class _MilestoneCard extends StatelessWidget {
-  const _MilestoneCard({required this.month, required this.index, required this.update, required this.expected, required this.isLast});
+  const _MilestoneCard({required this.month, required this.index, required this.update, required this.plantedAt, required this.isLast});
   final int month;
   final int index;
   final MilestoneUpdate? update;
-  final DateTime? expected;
+  final DateTime? plantedAt;
   final bool isLast;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final u = update;
-    final done = u != null;
+    final done = u?.isReceived ?? false;
+    final expected = u?.verifiedAt ?? plantedAt?.add(Duration(days: 30 * month));
     return IntrinsicHeight(
       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SizedBox(
@@ -109,17 +122,17 @@ class _MilestoneCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text('Report $index of 3', style: t.labelMedium?.copyWith(color: AppColors.textMuted)),
                   const Spacer(),
-                  if (done) StatusChip.forStatus(u.healthStatus),
+                  if (done) StatusChip.forStatus(u!.healthStatus) else const StatusChip('Upcoming'),
                 ]),
                 const SizedBox(height: 4),
                 Text(
-                  done ? 'Verified ${Fmt.date(u.verifiedAt)}' : 'Expected around ${Fmt.date(expected)}',
+                  done ? 'Photographed ${Fmt.date(u!.verifiedAt)}' : 'Expected around ${Fmt.date(expected)}',
                   style: t.bodySmall?.copyWith(color: AppColors.textMuted),
                 ),
                 if (done) ...[
                   const SizedBox(height: 10),
                   Stack(children: [
-                    NetImage(u.photoUrl, height: 170),
+                    NetImage(u!.photoUrl, height: 170),
                     Positioned(
                       left: 8,
                       bottom: 8,
@@ -132,7 +145,8 @@ class _MilestoneCard extends StatelessWidget {
                     ),
                   ]),
                   const SizedBox(height: 10),
-                  KeyValue('Growth', '+${u.growthCm.toStringAsFixed(1)} cm'),
+                  if (u.title != null) Text(u.title!, style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+                  if (u.growthCm != null) KeyValue('Growth', '+${u.growthCm!.toStringAsFixed(1)} cm'),
                   if (u.notes != null) Text(u.notes!, style: t.bodySmall),
                 ],
               ]),
