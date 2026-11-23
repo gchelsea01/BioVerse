@@ -17,7 +17,7 @@ class PetArt extends StatelessWidget {
   final int health;
   final double size;
 
-  Ecosystem get ecosystem => Ecosystem.parse(species);
+  Ecosystem get ecosystem => PetSpecies.ecosystemFor(species);
 
   @override
   Widget build(BuildContext context) {

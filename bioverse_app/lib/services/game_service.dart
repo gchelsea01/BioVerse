@@ -10,13 +10,18 @@ class GameService {
   // Pets
   Future<List<VirtualPet>> pets() async => list(await _api.get('/app/pets'), VirtualPet.fromJson);
 
-  Future<VirtualPet> createPet({required String name, required String species, required String coralType}) async =>
-      VirtualPet.fromJson(await _api.post<Json>('/app/pets',
-          body: {'pet_name': name.trim(), 'pet_species': species, 'coral_type': coralType}));
+  Future<List<PetSpecies>> species() async => list(await _api.get('/app/pets/species'), PetSpecies.fromJson);
 
-  /// [type] is `feed`, `clean`, or `pet`.
+  /// [species] is a `species_id` from [species()]; [displayName] goes to the
+  /// backend's required `coral_type` field.
+  Future<VirtualPet> createPet({required String name, required String species, required String displayName}) async =>
+      VirtualPet.fromJson(await _api.post<Json>('/app/pets',
+          body: {'pet_name': name.trim(), 'pet_species': species, 'coral_type': displayName}));
+
+  /// [type] is `feed`, `clean`, or `pet`. The API returns the updated pet.
   Future<VirtualPet> interact(VirtualPet pet, String type) async {
     final j = await _api.post<Json>('/app/pets/${pet.id}/interact', body: {'interaction_type': type});
+    if (j['id'] != null) return VirtualPet.fromJson(j);
     return pet.copyWith(
       health: integer(j, 'health_percent', pet.health),
       xp: integer(j, 'experience_points', pet.xp),
@@ -28,8 +33,46 @@ class GameService {
       VirtualPet.fromJson(await _api.post<Json>('/app/pets/$petId/equip', body: {'product_id': productId}));
 
   // Missions
-  Future<Paged<EcoMission>> missions({String? cursor}) async =>
-      Paged.from(await _api.get('/app/missions', query: {'cursor': cursor, 'limit': 30}), EcoMission.fromJson);
+
+  /// Missions with today's progress. The API's `completed_today` /
+  /// `my_last_submission_status` are currently always empty (backend scan
+  /// bug, see docs/BACKEND_NOTES.md), so they are filled in from the user's
+  /// own submissions when missing.
+  Future<Paged<EcoMission>> missions({String? cursor}) async {
+    final results = await Future.wait<Object?>([
+      _api.get('/app/missions', query: {'cursor': cursor, 'limit': 30}),
+      mySubmissions().then<Object?>((v) => v).catchError((_) => null),
+    ]);
+    final page = Paged.from(results[0], EcoMission.fromJson);
+    final subs = results[1] as List<MissionSubmission>?;
+    if (subs == null) return page;
+
+    final today = DateTime.now();
+    bool isToday(DateTime? d) => d != null && d.year == today.year && d.month == today.month && d.day == today.day;
+    final latest = <String, MissionSubmission>{};
+    for (final s in subs) {
+      final id = s.missionId;
+      if (id == null) continue;
+      final prev = latest[id];
+      if (prev == null || (s.createdAt?.isAfter(prev.createdAt ?? DateTime(0)) ?? false)) latest[id] = s;
+    }
+    return Paged(
+      [
+        for (final m in page.items)
+          if (m.completedToday || m.lastStatus != null || latest[m.id] == null)
+            m
+          else
+            m.withProgress(
+              completedToday: isToday(latest[m.id]!.createdAt) && latest[m.id]!.status != 'rejected',
+              lastStatus: latest[m.id]!.status,
+            ),
+      ],
+      page.nextCursor,
+    );
+  }
+
+  Future<List<MissionSubmission>> mySubmissions() async =>
+      Paged.from(await _api.get('/app/mission-submissions/my', query: {'limit': 50}), MissionSubmission.fromJson).items;
 
   Future<MissionSubmission> submitMission(String missionId, String proofKey, {String? petId}) async =>
       MissionSubmission.fromJson(await _api.post<Json>('/app/missions/$missionId/submit',
