@@ -5,9 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/common.dart';
-import '../../models/conservation.dart';
-import '../../models/donation.dart';
-import '../../models/json.dart';
+import '../../models/user.dart';
 import '../../state/services.dart';
 import '../../state/session.dart';
 import '../donation/donation_history_screen.dart';
@@ -73,17 +71,38 @@ class ProfileScreen extends StatelessWidget {
           ]),
         ),
         const SectionHeader('Activity'),
-        AsyncView<(Paged<Donation>, Paged<AdoptedUnit>)>(
-          load: () async {
-            final r = await Future.wait([services.donations.history(status: 'paid'), services.conservation.myCorals()]);
-            return (r[0] as Paged<Donation>, r[1] as Paged<AdoptedUnit>);
-          },
-          builder: (_, data, _) => Row(children: [
-            Expanded(child: _Stat(icon: Icons.volunteer_activism_rounded, value: '${data.$1.items.length}', label: 'Donations')),
-            const SizedBox(width: 8),
-            Expanded(child: _Stat(icon: Icons.water_rounded, value: '${data.$2.items.length}', label: 'Corals adopted')),
-            const SizedBox(width: 8),
-            Expanded(child: _Stat(icon: Icons.toll_rounded, value: Fmt.compact(session.points), label: 'Points')),
+        AsyncView<UserStats>(
+          load: () => services.user.stats(),
+          builder: (_, stats, _) => Column(children: [
+            Row(children: [
+              Expanded(child: _Stat(icon: Icons.eco_rounded, value: Fmt.compact(stats.unitsAdopted), label: 'Units adopted')),
+              const SizedBox(width: 8),
+              Expanded(child: _Stat(icon: Icons.flag_rounded, value: '${stats.missionsCompleted}', label: 'Missions done')),
+              const SizedBox(width: 8),
+              Expanded(child: _Stat(icon: Icons.toll_rounded, value: Fmt.compact(stats.points), label: 'Points')),
+            ]),
+            const SizedBox(height: 8),
+            Panel(
+              child: Row(children: [
+                const Icon(Icons.volunteer_activism_rounded, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Expanded(child: Text('Total donated', style: Theme.of(context).textTheme.titleSmall)),
+                Text(
+                  Fmt.money(stats.totalIn(user?.currency ?? 'IDR'), user?.currency ?? 'IDR'),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 8),
+            Panel(
+              color: AppColors.streakBg,
+              child: Row(children: [
+                const Icon(Icons.local_fire_department_rounded, color: AppColors.streak),
+                const SizedBox(width: 10),
+                Expanded(child: Text('Streak: ${stats.currentStreak} days', style: Theme.of(context).textTheme.titleSmall)),
+                Text('Best ${stats.longestStreak}', style: Theme.of(context).textTheme.bodySmall),
+              ]),
+            ),
           ]),
         ),
         const SectionHeader('Account'),
