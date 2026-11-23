@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/common.dart';
+import '../../models/json.dart';
 import '../../models/user.dart';
 import '../../state/services.dart';
 
@@ -44,19 +45,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         title: const Text('Notifications'),
         actions: [TextButton(onPressed: _readAll, child: const Text('Mark all read'))],
       ),
-      body: AsyncView<List<AppNotification>>(
+      body: AsyncView<Paged<AppNotification>>(
         key: ValueKey(_version),
         load: () => context.read<Services>().user.notifications(),
-        isEmpty: (l) => l.isEmpty,
+        isEmpty: (p) => p.items.isEmpty,
         empty: const EmptyState(title: "You're all caught up", icon: Icons.notifications_none_rounded),
-        builder: (context, items, reload) => RefreshIndicator(
+        builder: (context, page, reload) => RefreshIndicator(
           onRefresh: reload,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: items.length,
+            itemCount: page.items.length,
             separatorBuilder: (_, _) => const Divider(indent: 72),
             itemBuilder: (_, i) {
-              final n = items[i];
+              final n = page.items[i];
               final unread = !n.isRead && !_read.contains(n.id);
               return ListTile(
                 tileColor: unread ? AppColors.mint : null,

@@ -10,6 +10,8 @@ class UserService {
 
   Future<UserProfile> me() async => UserProfile.fromJson(await _api.get<Json>('/app/users/me'));
 
+  Future<UserStats> stats() async => UserStats.fromJson(await _api.get<Json>('/app/users/me/stats'));
+
   Future<UserProfile> update({
     String? fullName,
     String? phoneNumber,
@@ -29,8 +31,11 @@ class UserService {
     return UserProfile.fromJson(data);
   }
 
-  Future<List<AppNotification>> notifications({int limit = 50}) async =>
-      list(await _api.get('/app/notifications', query: {'limit': limit}), AppNotification.fromJson);
+  /// Accepts both the new `{items, next_cursor}` shape and the old plain list.
+  Future<Paged<AppNotification>> notifications({String? cursor, int limit = 30}) async => Paged.from(
+        await _api.get('/app/notifications', query: {'cursor': cursor, 'limit': limit}),
+        AppNotification.fromJson,
+      );
 
   Future<void> markRead(String id) => _api.patch('/app/notifications/$id/read');
   Future<void> markAllRead() => _api.post('/app/notifications/read-all');
