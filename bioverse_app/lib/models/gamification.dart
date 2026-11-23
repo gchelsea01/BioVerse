@@ -1,3 +1,4 @@
+import 'conservation.dart';
 import 'donation.dart';
 import 'json.dart';
 
@@ -28,7 +29,8 @@ class VirtualPet {
     required this.health,
     required this.isPrimary,
     this.equippedProductId,
-  });
+    int? xpToNextLevel,
+  }) : _xpToNext = xpToNextLevel;
 
   final String id;
   final String name;
@@ -40,12 +42,22 @@ class VirtualPet {
   final int health;
   final bool isPrimary;
   final String? equippedProductId;
+  final int? _xpToNext;
 
-  /// XP needed per level. The backend does not expose the curve, so the UI
-  /// shows progress within a 100 XP band (see docs/BACKEND_NOTES.md).
-  static const xpPerLevel = 100;
-  double get levelProgress => (xp % xpPerLevel) / xpPerLevel;
-  int get xpToNextLevel => xpPerLevel - (xp % xpPerLevel);
+  /// Mirrors the backend curve: level = 1 + floor(sqrt(xp / 100)), so level L
+  /// starts at 100·(L-1)² XP.
+  static int xpForLevel(int level) => 100 * (level - 1) * (level - 1);
+
+  int get xpToNextLevel => _xpToNext ?? (xpForLevel(level + 1) - xp).clamp(0, 1 << 30);
+
+  double get levelProgress {
+    final start = xpForLevel(level);
+    final span = xpForLevel(level + 1) - start;
+    return span <= 0 ? 0 : ((span - xpToNextLevel) / span).clamp(0, 1).toDouble();
+  }
+
+  /// Which habitat/art to show for this pet's species.
+  Ecosystem get ecosystem => PetSpecies.ecosystemFor(species);
 
   String get mood => health >= 70 ? 'Happy' : (health >= 40 ? 'Okay' : 'Needs care');
 
@@ -73,6 +85,62 @@ class VirtualPet {
         health: integer(j, 'health_percent', 100),
         isPrimary: boolean(j, 'is_primary'),
         equippedProductId: strOrNull(j, 'equipped_product_id'),
+        xpToNextLevel: intOrNull(j, 'xp_to_next_level'),
+      );
+}
+
+/// Companion species from `/pets/species`.
+class PetSpecies {
+  const PetSpecies({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.element,
+    required this.rarity,
+    this.imageUrl,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+  final String element;
+  final String rarity;
+  final String? imageUrl;
+
+  Ecosystem get ecosystem => ecosystemFor(id, element);
+
+  static const _marine = {'ocean', 'reef', 'pelagic', 'seagrass', 'coral'};
+  static const _coast = {'mangrove', 'coast', 'coastal'};
+  static const _ids = {
+    'crab': Ecosystem.mangrove,
+    'hornbill': Ecosystem.tree,
+    'deer': Ecosystem.tree,
+    'orangutan': Ecosystem.tree,
+    'sun_bear': Ecosystem.tree,
+  };
+
+  /// Maps a species id (or its element) to one of the three ecosystems.
+  static Ecosystem ecosystemFor(String speciesId, [String? element]) {
+    for (final e in Ecosystem.values) {
+      if (e.api == speciesId) return e;
+    }
+    final known = _ids[speciesId];
+    if (known != null) return known;
+    if (element != null) {
+      if (_marine.contains(element)) return Ecosystem.coral;
+      if (_coast.contains(element)) return Ecosystem.mangrove;
+      return Ecosystem.tree;
+    }
+    return Ecosystem.coral;
+  }
+
+  factory PetSpecies.fromJson(Json j) => PetSpecies(
+        id: str(j, 'species_id'),
+        name: str(j, 'name'),
+        description: str(j, 'description'),
+        element: str(j, 'element'),
+        rarity: str(j, 'rarity', 'common'),
+        imageUrl: strOrNull(j, 'avatar_asset_url'),
       );
 }
 
@@ -87,7 +155,29 @@ class EcoMission {
     this.category,
     this.difficulty,
     this.imageUrl,
+    this.estimatedMinutes,
+    this.completedToday = false,
+    this.lastStatus,
   });
+
+  final int? estimatedMinutes;
+  final bool completedToday;
+  final String? lastStatus;
+
+  EcoMission withProgress({required bool completedToday, String? lastStatus}) => EcoMission(
+        id: id,
+        title: title,
+        description: description,
+        instructions: instructions,
+        points: points,
+        xp: xp,
+        category: category,
+        difficulty: difficulty,
+        imageUrl: imageUrl,
+        estimatedMinutes: estimatedMinutes,
+        completedToday: completedToday,
+        lastStatus: lastStatus,
+      );
 
   final String id;
   final String title;
@@ -118,6 +208,9 @@ class EcoMission {
         category: strOrNull(j, 'category'),
         difficulty: strOrNull(j, 'difficulty'),
         imageUrl: strOrNull(j, 'image_url'),
+        estimatedMinutes: intOrNull(j, 'estimated_minutes'),
+        completedToday: boolean(j, 'completed_today'),
+        lastStatus: strOrNull(j, 'my_last_submission_status'),
       );
 }
 
@@ -126,6 +219,7 @@ class MissionSubmission {
     required this.id,
     required this.status,
     this.missionId,
+    this.missionTitle,
     this.message,
     this.awardedPoints,
     this.awardedXp,
@@ -135,6 +229,7 @@ class MissionSubmission {
   final String id;
   final String status;
   final String? missionId;
+  final String? missionTitle;
   final String? message;
   final int? awardedPoints;
   final int? awardedXp;
@@ -146,6 +241,7 @@ class MissionSubmission {
         id: str(j, 'id', str(j, 'submission_id')),
         status: str(j, 'status', 'pending'),
         missionId: strOrNull(j, 'mission_id'),
+        missionTitle: strOrNull(j, 'mission_title'),
         message: strOrNull(j, 'message'),
         awardedPoints: intOrNull(j, 'awarded_points'),
         awardedXp: intOrNull(j, 'awarded_xp'),
