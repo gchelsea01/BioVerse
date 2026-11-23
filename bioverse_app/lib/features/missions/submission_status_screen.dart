@@ -28,7 +28,21 @@ class _SubmissionStatusScreenState extends State<SubmissionStatusScreen> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 4), (_) => _poll());
+    if (_s.isFinal) {
+      // Verified on submit (the API can answer synchronously): refresh rewards now.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _refreshRewards();
+      });
+    } else {
+      _timer = Timer.periodic(const Duration(seconds: 4), (_) => _poll());
+    }
+  }
+
+  void _refreshRewards() {
+    if (_s.status != 'verified') return;
+    context.read<Session>()
+      ..refreshUser()
+      ..refreshGame();
   }
 
   @override
@@ -45,11 +59,7 @@ class _SubmissionStatusScreenState extends State<SubmissionStatusScreen> {
       setState(() => _s = s);
       if (s.isFinal) {
         _timer?.cancel();
-        if (s.status == 'verified') {
-          context.read<Session>()
-            ..refreshUser()
-            ..refreshGame();
-        }
+        _refreshRewards();
       }
     } catch (_) {}
   }
