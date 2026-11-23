@@ -44,6 +44,18 @@ class ProjectCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(p.title, style: t.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+            if (p.locationName != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Row(children: [
+                  const Icon(Icons.place_outlined, size: 14, color: AppColors.textMuted),
+                  const SizedBox(width: 2),
+                  Expanded(
+                    child: Text(p.locationName!,
+                        style: t.labelMedium?.copyWith(color: AppColors.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ]),
+              ),
             const SizedBox(height: 4),
             Text(p.description, style: t.bodySmall?.copyWith(color: AppColors.textMuted), maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 12),
@@ -87,7 +99,12 @@ class ProjectMiniCard extends StatelessWidget {
               const SizedBox(height: 8),
               Progress(p.progress, color: p.ecosystem.color, height: 6),
               const SizedBox(height: 4),
-              Text('${(p.progress * 100).round()}% funded', style: t.labelSmall?.copyWith(color: AppColors.textMuted)),
+              Text(
+                '${(p.progress * 100).round()}% funded${p.locationName != null ? ' • ${p.locationName}' : ''}',
+                style: t.labelSmall?.copyWith(color: AppColors.textMuted),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ]),
           ),
         ]),
