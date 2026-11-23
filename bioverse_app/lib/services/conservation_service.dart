@@ -20,11 +20,14 @@ class ConservationService {
   Future<Project> project(String id) async =>
       Project.fromJson(await _api.get<Json>('/app/conservation/projects/$id'));
 
-  Future<Paged<AdoptedUnit>> myCorals({String? cursor}) async => Paged.from(
-        await _api.get('/app/conservation/corals/my', query: {'cursor': cursor, 'limit': 50}),
+  /// Everything the user adopted across coral, mangrove, and tree projects,
+  /// with growth reports embedded.
+  Future<Paged<AdoptedUnit>> myUnits({String? cursor}) async => Paged.from(
+        await _api.get('/app/conservation/units/my', query: {'cursor': cursor, 'limit': 50}),
         AdoptedUnit.fromJson,
       );
 
+  /// Coral-only timeline; used when a unit has no embedded reports.
   Future<List<MilestoneUpdate>> timeline(String coralId) async {
     final items = list(await _api.get('/app/conservation/corals/$coralId/timeline'), MilestoneUpdate.fromJson);
     return items..sort((a, b) => a.month.compareTo(b.month));

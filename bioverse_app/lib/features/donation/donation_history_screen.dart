@@ -44,12 +44,12 @@ class _AdoptedTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AsyncView<Paged<AdoptedUnit>>(
-      load: () => context.read<Services>().conservation.myCorals(),
+      load: () => context.read<Services>().conservation.myUnits(),
       isEmpty: (p) => p.items.isEmpty,
       empty: const EmptyState(
         title: 'Nothing adopted yet',
-        message: 'After your donation is paid, each coral you adopt shows up here with its photo reports.',
-        icon: Icons.water_rounded,
+        message: 'After your donation is paid, every coral, mangrove, and tree you adopt shows up here with its photo reports.',
+        icon: Icons.eco_rounded,
       ),
       builder: (context, page, reload) => RefreshIndicator(
         onRefresh: reload,
@@ -76,7 +76,10 @@ class _AdoptedCard extends StatelessWidget {
       padding: EdgeInsets.zero,
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AdoptedUnitScreen(unit: u))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        NetImage(u.latestPhotoUrl, height: 130, radius: 0, icon: Icons.water_rounded),
+        Stack(children: [
+          NetImage(u.latestPhotoUrl, height: 130, radius: 0, icon: u.ecosystem.icon),
+          Positioned(left: 12, top: 12, child: EcosystemTag(u.ecosystem)),
+        ]),
         Padding(
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -85,11 +88,22 @@ class _AdoptedCard extends StatelessWidget {
               StatusChip.forStatus(u.lifecycleStatus),
             ]),
             if (u.nickname != null) Text(u.projectName, style: t.bodySmall?.copyWith(color: AppColors.textMuted)),
+            if (u.locationName != null)
+              Row(children: [
+                const Icon(Icons.place_outlined, size: 14, color: AppColors.textMuted),
+                const SizedBox(width: 2),
+                Expanded(child: Text(u.locationName!, style: t.bodySmall?.copyWith(color: AppColors.textMuted))),
+              ]),
             const SizedBox(height: 10),
             Row(children: [
               Expanded(child: InfoTile(label: 'Species', value: u.speciesName)),
               const SizedBox(width: 8),
-              Expanded(child: InfoTile(label: 'Fragment code', value: u.code)),
+              Expanded(
+                child: InfoTile(
+                  label: u.quantity > 1 ? 'Units' : 'Unit code',
+                  value: u.quantity > 1 ? '${u.quantity} ${u.ecosystem.unitName}s' : u.code,
+                ),
+              ),
             ]),
             const SizedBox(height: 10),
             Container(
@@ -165,16 +179,23 @@ class _TransactionsTabState extends State<_TransactionsTab> {
                       ? Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen(donation: d)))
                       : _showReceipt(context, d),
                   child: Row(children: [
-                    CircleAvatar(
-                      backgroundColor: AppColors.mint,
-                      child: Icon(d.type == 'tree_planting' ? Icons.park_rounded : Icons.water_rounded, color: AppColors.primary),
-                    ),
+                    if (d.imageUrl != null)
+                      NetImage(d.imageUrl, width: 48, height: 48, icon: _icon(d))
+                    else
+                      CircleAvatar(backgroundColor: AppColors.mint, child: Icon(_icon(d), color: AppColors.primary)),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(d.typeLabel, style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-                        Text('${Fmt.date(d.createdAt)} • ${Fmt.enumLabel(d.paymentMethod)}',
-                            style: t.bodySmall?.copyWith(color: AppColors.textMuted)),
+                        Text(d.projectTitle ?? d.typeLabel,
+                            style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700), maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Text(
+                          [
+                            if (d.quantity > 0) '${d.quantity} unit${d.quantity > 1 ? 's' : ''}',
+                            Fmt.date(d.createdAt),
+                            Fmt.enumLabel(d.paymentMethod),
+                          ].join(' • '),
+                          style: t.bodySmall?.copyWith(color: AppColors.textMuted),
+                        ),
                       ]),
                     ),
                     Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -192,6 +213,9 @@ class _TransactionsTabState extends State<_TransactionsTab> {
     ]);
   }
 
+  IconData _icon(Donation d) =>
+      (Ecosystem.fromDonationType(d.type) ?? (d.projectCategory != null ? Ecosystem.parse(d.projectCategory) : Ecosystem.coral)).icon;
+
   void _showReceipt(BuildContext context, Donation d) {
     showModalBottomSheet(
       context: context,
@@ -202,6 +226,9 @@ class _TransactionsTabState extends State<_TransactionsTab> {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text('Donation receipt', style: Theme.of(c).textTheme.titleLarge),
             const SizedBox(height: 12),
+            if (d.projectTitle != null) KeyValue('Project', d.projectTitle!),
+            if (d.locationName != null) KeyValue('Location', d.locationName!),
+            if (d.quantity > 0) KeyValue('Units', '${d.quantity}'),
             KeyValue('Type', d.typeLabel),
             KeyValue('Status', Fmt.enumLabel(d.status)),
             KeyValue('Amount', Fmt.money(d.grossAmount, d.currency)),
