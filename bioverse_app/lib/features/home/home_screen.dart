@@ -9,9 +9,9 @@ import '../../core/widgets/brand.dart';
 import '../../core/widgets/common.dart';
 import '../../core/widgets/pet_art.dart';
 import '../../models/conservation.dart';
-import '../../models/donation.dart';
 import '../../models/gamification.dart';
 import '../../models/json.dart';
+import '../../models/user.dart';
 import '../../state/services.dart';
 import '../../state/session.dart';
 import '../auth/verify_email_screen.dart';
@@ -171,32 +171,31 @@ class _ImpactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    return AsyncView<(Paged<Donation>, Paged<AdoptedUnit>)>(
+    final currency = context.select<Session, String>((s) => s.user?.currency ?? 'IDR');
+    return AsyncView<(UserStats, Paged<AdoptedUnit>)>(
       load: () async {
-        final r = await Future.wait([
-          services.donations.history(status: 'paid'),
-          services.conservation.myCorals(),
-        ]);
-        return (r[0] as Paged<Donation>, r[1] as Paged<AdoptedUnit>);
+        final r = await Future.wait<Object>([services.user.stats(), services.conservation.myUnits()]);
+        return (r[0] as UserStats, r[1] as Paged<AdoptedUnit>);
       },
       loading: const Panel(child: SizedBox(height: 120, child: Center(child: CircularProgressIndicator()))),
       builder: (context, data, _) {
-        final (donations, corals) = data;
-        final paid = donations.items;
-        final currency = paid.isEmpty ? 'USD' : paid.first.currency;
-        final total = paid.where((d) => d.currency == currency).fold<double>(0, (s, d) => s + d.grossAmount);
-        final trees = paid.where((d) => d.type == 'tree_planting').length;
+        final (stats, units) = data;
+        int count(Ecosystem e) => units.items.where((u) => u.ecosystem == e).fold(0, (n, u) => n + u.quantity);
         return Panel(
           color: AppColors.mint,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('YOUR CONTRIBUTION', style: t.labelMedium?.copyWith(color: AppColors.textMuted, letterSpacing: 0.8)),
             const SizedBox(height: 2),
-            Text(Fmt.money(total, currency), style: t.headlineMedium?.copyWith(fontWeight: FontWeight.w800, color: AppColors.navy)),
+            Text(Fmt.money(stats.totalIn(currency), currency),
+                style: t.headlineMedium?.copyWith(fontWeight: FontWeight.w800, color: AppColors.navy)),
+            Text('${Fmt.number(stats.unitsAdopted)} units adopted • ${stats.missionsCompleted} missions done',
+                style: t.bodySmall?.copyWith(color: AppColors.textMuted)),
             const SizedBox(height: 12),
             Row(children: [
-              Expanded(child: InfoTile(icon: Icons.water_rounded, label: 'Corals adopted', value: '${corals.items.length}')),
-              const SizedBox(width: 8),
-              Expanded(child: InfoTile(icon: Icons.park_rounded, label: 'Tree/mangrove gifts', value: '$trees')),
+              for (final e in Ecosystem.values) ...[
+                Expanded(child: InfoTile(icon: e.icon, label: e.label, value: '${count(e)}')),
+                if (e != Ecosystem.values.last) const SizedBox(width: 8),
+              ],
             ]),
             const SizedBox(height: 8),
             Align(
@@ -226,7 +225,7 @@ class _PetCard extends StatelessWidget {
     final p = pet;
     if (!loaded) return const SizedBox(height: 8);
     return HabitatBackground(
-      ecosystem: Ecosystem.parse(p?.species),
+      ecosystem: p?.ecosystem ?? Ecosystem.coral,
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(children: [
