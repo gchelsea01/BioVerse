@@ -114,3 +114,37 @@ class AppNotification {
         createdAt: date(j, 'created_at'),
       );
 }
+
+/// `/users/me/stats`: totals computed by the backend.
+class UserStats {
+  const UserStats({
+    this.points = 0,
+    this.currentStreak = 0,
+    this.longestStreak = 0,
+    this.totalUsd = 0,
+    this.totalIdr = 0,
+    this.unitsAdopted = 0,
+    this.missionsCompleted = 0,
+  });
+
+  final int points;
+  final int currentStreak;
+  final int longestStreak;
+  final double totalUsd;
+  final double totalIdr;
+  final int unitsAdopted;
+  final int missionsCompleted;
+
+  /// Total donated in the user's preferred currency (IDR or USD).
+  double totalIn(String currency) => currency == 'IDR' ? totalIdr : totalUsd;
+
+  factory UserStats.fromJson(Json j) => UserStats(
+        points: integer(j, 'current_points'),
+        currentStreak: integer(j, 'current_streak'),
+        longestStreak: integer(j, 'longest_streak'),
+        totalUsd: number(j, 'total_donations_usd'),
+        totalIdr: number(j, 'total_donations_idr'),
+        unitsAdopted: integer(j, 'total_units_adopted'),
+        missionsCompleted: integer(j, 'missions_completed'),
+      );
+}
