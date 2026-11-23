@@ -21,7 +21,7 @@ void main() {
     expect(p.pricePerUnit, 3.2);
     expect(p.progress, closeTo(0.28, 0.001));
     expect(p.isOpen, isTrue);
-    expect(p.ecosystem.donationType, 'tree_planting');
+    expect(p.ecosystem.donationType, 'mangrove_planting');
   });
 
   test('missing fields do not throw', () {
