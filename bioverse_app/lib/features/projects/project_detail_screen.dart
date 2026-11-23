@@ -46,6 +46,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           Row(children: [EcosystemTag(p.ecosystem), const SizedBox(width: 8), StatusChip.forStatus(p.status)]),
           const SizedBox(height: 10),
           Text(p.title, style: t.headlineSmall),
+          if (p.locationName != null) ...[
+            const SizedBox(height: 4),
+            Row(children: [
+              const Icon(Icons.place_rounded, size: 18, color: AppColors.primary),
+              const SizedBox(width: 4),
+              Expanded(child: Text(p.locationName!, style: t.titleSmall?.copyWith(color: AppColors.primary))),
+            ]),
+          ],
           const SizedBox(height: 8),
           Text(p.description, style: t.bodyMedium?.copyWith(height: 1.45)),
           const SizedBox(height: 16),
@@ -61,6 +69,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 const SizedBox(width: 8),
                 Expanded(child: InfoTile(label: 'Already planted', value: Fmt.number(p.plantedUnits))),
               ]),
+              const SizedBox(height: 8),
+              InfoTile(icon: Icons.groups_rounded, label: 'Contributors', value: '${Fmt.number(p.contributors)} guardians'),
             ]),
           ),
           const SizedBox(height: 12),
@@ -71,6 +81,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           InfoTile(icon: p.ecosystem.icon, label: 'Species', value: p.speciesName.isEmpty ? p.ecosystem.label : p.speciesName),
           const SizedBox(height: 8),
           InfoTile(icon: Icons.monitor_heart_rounded, label: 'Site health', value: Fmt.enumLabel(p.healthStatus)),
+          if (p.latitude != null && p.longitude != null) ...[
+            const SizedBox(height: 8),
+            InfoTile(
+              icon: Icons.my_location_rounded,
+              label: 'Coordinates',
+              value: '${p.latitude!.toStringAsFixed(4)}, ${p.longitude!.toStringAsFixed(4)}',
+            ),
+          ],
           if (p.objectives.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text('Goals', style: t.titleMedium),
