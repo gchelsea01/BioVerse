@@ -66,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
-          key: ValueKey(_version),
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
           children: [
             Text('Hi, ${user?.firstName ?? 'Guardian'}', style: t.headlineSmall),
@@ -81,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
             const SizedBox(height: 16),
-            _ImpactCard(services: services),
+            _ImpactCard(key: ValueKey('impact$_version'), services: services),
             const SizedBox(height: 16),
             _PetCard(pet: session.pet, loaded: session.petLoaded, onOpen: () => shell.go(AppTab.pet)),
             SectionHeader(
@@ -90,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onAction: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MissionsScreen())),
             ),
             AsyncView<Paged<EcoMission>>(
+              key: ValueKey('missions$_version'),
               load: () => services.game.missions(),
               isEmpty: (p) => p.items.isEmpty,
               empty: const Panel(child: Text('No missions right now. Check back tomorrow!')),
@@ -97,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SectionHeader('Support a project', actionLabel: 'See all', onAction: () => shell.go(AppTab.donate)),
             AsyncView<Paged<Project>>(
+              key: ValueKey('projects$_version'),
               load: () => services.conservation.projects(status: 'open_for_donation', limit: 5),
               isEmpty: (p) => p.items.isEmpty,
               empty: const Panel(child: Text('No open projects right now.')),
@@ -112,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SectionHeader('Community impact'),
             AsyncView<ImpactSummary>(
+              key: ValueKey('community$_version'),
               load: () => services.conservation.impact(),
               builder: (_, s, _) => Row(children: [
                 Expanded(child: _StatBox(icon: Icons.water_rounded, color: AppColors.coral, value: Fmt.compact(s.corals), label: 'Corals adopted')),
@@ -122,6 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ]),
             ),
             AsyncView<Paged<NewsArticle>>(
+              key: ValueKey('news$_version'),
               load: () => services.conservation.news(),
               loading: const SizedBox(),
               isEmpty: (p) => p.items.isEmpty,
@@ -165,7 +168,7 @@ class _Banner extends StatelessWidget {
 }
 
 class _ImpactCard extends StatelessWidget {
-  const _ImpactCard({required this.services});
+  const _ImpactCard({super.key, required this.services});
   final Services services;
 
   @override
@@ -193,7 +196,7 @@ class _ImpactCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(children: [
               for (final e in Ecosystem.values) ...[
-                Expanded(child: InfoTile(icon: e.icon, label: e.label, value: '${count(e)}')),
+                Expanded(child: _EcoCount(ecosystem: e, count: count(e))),
                 if (e != Ecosystem.values.last) const SizedBox(width: 8),
               ],
             ]),
@@ -273,6 +276,33 @@ class _StatBox extends StatelessWidget {
         const SizedBox(height: 6),
         Text(value, style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
         Text(label, style: t.labelSmall?.copyWith(color: AppColors.textMuted)),
+      ]),
+    );
+  }
+}
+
+/// Compact counter (icon, number, label stacked) so long labels like
+/// "Mangrove" never wrap on narrow phones.
+class _EcoCount extends StatelessWidget {
+  const _EcoCount({required this.ecosystem, required this.count});
+  final Ecosystem ecosystem;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(children: [
+        Icon(ecosystem.icon, color: ecosystem.color, size: 22),
+        const SizedBox(height: 4),
+        Text('$count', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+        Text(ecosystem.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.labelSmall?.copyWith(color: AppColors.textMuted)),
       ]),
     );
   }
