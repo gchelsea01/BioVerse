@@ -1,5 +1,6 @@
 import 'package:bioverse_app/core/theme/app_theme.dart';
 import 'package:bioverse_app/core/utils/format.dart';
+import 'package:bioverse_app/core/widgets/net_image.dart';
 import 'package:bioverse_app/core/widgets/pet_art.dart';
 import 'package:bioverse_app/models/conservation.dart';
 import 'package:bioverse_app/models/gamification.dart';
@@ -42,5 +43,18 @@ void main() {
     ));
     await tester.pump();
     expect(find.byType(PetArt), findsOneWidget);
+  });
+
+  test('unsplash images are requested at display size', () {
+    expect(sizedImageUrl('https://images.unsplash.com/photo-1', 800), contains('w=800'));
+    expect(sizedImageUrl('https://example.com/a.jpg', 800), 'https://example.com/a.jpg');
+    expect(sizedImageUrl('https://images.unsplash.com/photo-1?w=300', 800), contains('w=300'));
+  });
+
+  testWidgets('NetImage accepts an infinite width without throwing', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: Column(children: [NetImage('https://images.unsplash.com/photo-1', height: 100, width: double.infinity)])),
+    ));
+    expect(tester.takeException(), isNull);
   });
 }

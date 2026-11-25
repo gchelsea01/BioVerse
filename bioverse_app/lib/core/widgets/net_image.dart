@@ -31,14 +31,37 @@ class NetImage extends StatelessWidget {
       borderRadius: BorderRadius.circular(radius),
       child: (u == null || u.isEmpty)
           ? placeholder
-          : CachedNetworkImage(
-              imageUrl: u,
-              height: height,
-              width: width,
-              fit: fit,
+          : Builder(builder: (context) {
+              // Download and decode at display size, not the multi-MB original.
+              // (No LayoutBuilder: it breaks inside IntrinsicHeight.)
+              final dpr = MediaQuery.devicePixelRatioOf(context);
+              final w = this.width;
+              final shown = (w != null && w.isFinite) ? w : MediaQuery.sizeOf(context).width;
+              final px = (shown * dpr).round().clamp(64, 1600);
+              return CachedNetworkImage(
+                imageUrl: sizedImageUrl(u, px),
+                memCacheWidth: px,
+                height: height,
+                width: width,
+                fit: fit,
               placeholder: (_, _) => placeholder,
-              errorWidget: (_, _, _) => placeholder,
-            ),
+                errorWidget: (_, _, _) => placeholder,
+              );
+            }),
     );
   }
+}
+
+/// Asks image CDNs that support it (Unsplash) for a resized, compressed
+/// version. Other URLs are returned unchanged.
+String sizedImageUrl(String url, int widthPx) {
+  final uri = Uri.tryParse(url);
+  if (uri == null || uri.host != 'images.unsplash.com' || uri.queryParameters.containsKey('w')) return url;
+  return uri.replace(queryParameters: {
+    ...uri.queryParameters,
+    'w': '$widthPx',
+    'q': '70',
+    'auto': 'format',
+    'fit': 'crop',
+  }).toString();
 }
