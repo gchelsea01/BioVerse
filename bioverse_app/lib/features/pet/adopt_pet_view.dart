@@ -128,7 +128,7 @@ class _AdoptFormState extends State<_AdoptForm> {
               ),
               title: Wrap(spacing: 6, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
                 Text(s.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-                EcosystemTag(s.ecosystem),
+                EcosystemTag(s.ecosystem, label: s.element.replaceAll('_', ' ')),
                 StatusChip(Fmt.enumLabel(s.rarity), tone: s.rarity == 'common' ? Tone.neutral : Tone.info),
               ]),
               subtitle: Text(s.description, maxLines: 2, overflow: TextOverflow.ellipsis),
