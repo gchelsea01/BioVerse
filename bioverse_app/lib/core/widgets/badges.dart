@@ -125,21 +125,27 @@ extension EcosystemStyle on Ecosystem {
 }
 
 class EcosystemTag extends StatelessWidget {
-  const EcosystemTag(this.ecosystem, {super.key});
+  const EcosystemTag(this.ecosystem, {super.key, this.onImage = false, this.label});
   final Ecosystem ecosystem;
+
+  /// Solid background so the tag stays readable on top of photos.
+  final bool onImage;
+
+  /// Overrides the text (e.g. a species habitat such as "Reef").
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: ecosystem.color.withValues(alpha: 0.12),
+        color: onImage ? Colors.white : ecosystem.color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(ecosystem.icon, size: 14, color: ecosystem.color),
         const SizedBox(width: 4),
-        Text(ecosystem.label.toUpperCase(),
+        Text((label ?? ecosystem.label).toUpperCase(),
             style: TextStyle(color: ecosystem.color, fontWeight: FontWeight.w800, fontSize: 11, letterSpacing: 0.5)),
       ]),
     );
