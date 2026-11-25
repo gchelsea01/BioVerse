@@ -93,7 +93,8 @@ class _PasswordFieldState extends State<PasswordField> {
       controller: widget.controller,
       validator: widget.validator ?? Validators.password,
       obscure: _hidden,
-      hint: '••••••••',
+      // A dotted hint looked like an already-filled password on device.
+      hint: widget.isNew ? 'At least 8 characters' : 'Enter your password',
       autofillHints: [widget.isNew ? AutofillHints.newPassword : AutofillHints.password],
       textInputAction: widget.onSubmitted != null ? TextInputAction.done : TextInputAction.next,
       onSubmitted: widget.onSubmitted,
