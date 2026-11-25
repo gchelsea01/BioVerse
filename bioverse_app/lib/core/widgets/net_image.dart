@@ -16,6 +16,9 @@ class NetImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Fill the available width unless told otherwise; inside a Stack the
+    // image would otherwise shrink to its intrinsic size.
+    final width = this.width ?? double.infinity;
     final placeholder = Container(
       height: height,
       width: width,

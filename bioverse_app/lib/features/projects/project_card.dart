@@ -26,8 +26,8 @@ class ProjectCard extends StatelessWidget {
       onTap: () => openProject(context, p),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Stack(children: [
-          NetImage(p.imageUrl, height: 140, radius: 0, icon: p.ecosystem.icon),
-          Positioned(left: 12, top: 12, child: EcosystemTag(p.ecosystem)),
+          NetImage(p.imageUrl, height: 140, width: double.infinity, radius: 0, icon: p.ecosystem.icon),
+          Positioned(left: 12, top: 12, child: EcosystemTag(p.ecosystem, onImage: true)),
           Positioned(right: 12, top: 12, child: StatusChip.forStatus(p.status)),
           if (p.isUrgent)
             Positioned(

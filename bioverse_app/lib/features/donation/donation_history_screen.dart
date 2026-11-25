@@ -77,8 +77,8 @@ class _AdoptedCard extends StatelessWidget {
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AdoptedUnitScreen(unit: u))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Stack(children: [
-          NetImage(u.latestPhotoUrl, height: 130, radius: 0, icon: u.ecosystem.icon),
-          Positioned(left: 12, top: 12, child: EcosystemTag(u.ecosystem)),
+          NetImage(u.latestPhotoUrl, height: 130, width: double.infinity, radius: 0, icon: u.ecosystem.icon),
+          Positioned(left: 12, top: 12, child: EcosystemTag(u.ecosystem, onImage: true)),
         ]),
         Padding(
           padding: const EdgeInsets.all(14),
