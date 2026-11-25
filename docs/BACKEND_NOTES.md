@@ -1,16 +1,15 @@
 # Catatan Backend untuk App Android
 
-API: `https://api.ourprojects.my.id/v1`. Terakhir dicek 23 Nov 2026 pada backend commit `e8f1166` (sudah ter-deploy), memakai akun tes `bioverse.qa+…@example.com`.
+API: `https://api.ourprojects.my.id/v1`. Terakhir dicek 25 Nov 2026 pada backend commit `e8f1166` (ter-deploy sejak 23 Nov, uptime 47 jam), memakai akun tes `bioverse.qa+…@example.com`.
 
-## Masih terbuka
+## Masih terbuka (dicek ulang 25 Nov 2026, belum ada commit backend baru)
 
-1. **Fallback CV masih auto-approve di production.** Sekarang sudah ada guard `CV_FALLBACK_AUTO_APPROVE`, tapi nilai default-nya `true`. Tes 23 Nov: PNG polos berwarna hijau tetap `verified` dan mendapat +50 poin.
-   - Kalau fitur ini sudah dipakai user sungguhan, set `CV_FALLBACK_AUTO_APPROVE=false` di server (submission akan masuk `needs_review`) dan sediakan halaman review di admin. Atau nyalakan service CV.
+1. **Fallback CV masih auto-approve di production.** Guard `CV_FALLBACK_AUTO_APPROVE` sudah ada, tapi nilai default-nya `true` dan belum di-set di server. Tes 25 Nov: PNG polos berwarna hijau tetap `verified` dan mendapat poin.
+   - Kalau fitur ini sudah dipakai user sungguhan, set `CV_FALLBACK_AUTO_APPROVE=false` (submission masuk `needs_review`) dan sediakan halaman review di admin. Atau nyalakan service CV.
 
-2. **`completed_today` memakai `CURRENT_DATE` (tanggal server, UTC)**, sedangkan `submission_date` memakai tanggal lokal user. Akibatnya, untuk misi yang di-submit antara 00:00–07:00 WIB, `completed_today` bisa `false` padahal submit ulang ditolak 409.
-   - Perbaikan: bandingkan dengan tanggal lokal user, bukan `CURRENT_DATE`.
-
-3. **`/v1/health` sepertinya di-cache.** `timestamp` dan `uptime` di respons tertinggal beberapa jam, jadi endpoint ini tidak bisa dipakai untuk memastikan deploy.
+2. **`completed_today` memakai `CURRENT_DATE` (tanggal server, UTC)**, sedangkan `submission_date` memakai tanggal lokal user (`db/queries/gamification.sql` baris 99). Untuk misi yang di-submit antara 00:00–07:00 WIB, `completed_today` bisa `false` padahal submit ulang ditolak 409.
+   - Perbaikan: kirim tanggal lokal user sebagai parameter query, ganti `CURRENT_DATE`.
+   - *Sementara:* aman untuk pemakaian siang/sore. App tetap menampilkan pesan 409 "already submitted today" dengan jelas.
 
 ## Sudah beres (diverifikasi di API live)
 - `completed_today` / `my_last_submission_status` di `GET /missions` sudah terisi (fix `COALESCE`).
