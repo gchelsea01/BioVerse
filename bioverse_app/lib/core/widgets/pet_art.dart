@@ -67,15 +67,33 @@ class _PetPainter extends CustomPainter {
 
     switch (ecosystem) {
       case Ecosystem.coral:
-        final branches = 3 + stage.index;
-        for (var i = 0; i < branches; i++) {
-          final t = branches == 1 ? 0.5 : i / (branches - 1);
-          final x = s * (0.22 + t * 0.56);
-          final h = s * (0.32 + 0.12 * math.sin(t * math.pi));
-          canvas.drawRRect(
-            RRect.fromRectAndRadius(Rect.fromLTWH(x - s * 0.06, s * 0.5 - h, s * 0.12, h + s * 0.1), Radius.circular(s * 0.06)),
-            paint,
-          );
+        // Branching coral: limbs fan out from the body and fork at the tips,
+        // so it reads as coral rather than fingers. Older stages get more limbs.
+        final limb = Paint()
+          ..color = base
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = s * 0.075;
+        final twig = Paint()
+          ..color = base
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = s * 0.05;
+        final tip = Paint()..color = Color.lerp(base, Colors.white, 0.45)!;
+        final origin = Offset(s * 0.5, s * 0.55);
+        final limbs = 3 + stage.index;
+        for (var i = 0; i < limbs; i++) {
+          final t = limbs == 1 ? 0.5 : i / (limbs - 1);
+          final angle = -math.pi / 2 + (t - 0.5) * 1.5; // fan from left to right
+          final len = s * (0.26 + 0.08 * math.sin(t * math.pi));
+          final end = origin + Offset(math.cos(angle), math.sin(angle)) * len;
+          canvas.drawLine(origin, end, limb);
+          for (final fork in [-0.45, 0.45]) {
+            final a = angle + fork;
+            final twigEnd = end + Offset(math.cos(a), math.sin(a)) * (s * 0.09);
+            canvas.drawLine(end, twigEnd, twig);
+            canvas.drawCircle(twigEnd, s * 0.028, tip);
+          }
         }
       case Ecosystem.mangrove:
         final rootPaint = Paint()
