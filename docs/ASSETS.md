@@ -1,5 +1,13 @@
 # Kebutuhan Aset BioVerse (App Android)
 
+> **Status (27 Nov 2026):** `Assets.zip` dari tim desain sudah dipasang: maskot coral biru/hijau/pink + pohon, props (gelembung, kerang, bintang laut, semak, bunga matahari), logo, dan font Inter (body) + Nunito (header).
+> **Masih dibutuhkan:**
+> 1. **Logo dalam SVG** (atau PNG ≥ 600 px). `Layer_1.png` hanya 145×71 px sehingga buram di splash.
+> 2. **Maskot per tahap tumbuh** (hatchling → elder). Sekarang satu gambar yang diperkecil.
+> 3. **Ekspresi sedih/lelah** untuk pet yang perlu dirawat. Sekarang gambar normal dibuat pudar.
+> 4. **Ilustrasi onboarding khusus** (opsional). Sekarang disusun dari maskot yang ada.
+> 5. **Foto seed backend yang sesuai** (proyek mangrove dan spesies masih memakai foto yang tidak cocok).
+
 Ringkas: apa yang **harus dibuat artist**, apa yang **sudah dibuatkan di kode**, dan apa yang **cukup diambil dari Figma**.
 
 BioVerse bukan cuma laut. Semua aset harus siap untuk 3 ekosistem dari backend: **coral (terumbu karang), mangrove, tree (hutan/darat)**.
