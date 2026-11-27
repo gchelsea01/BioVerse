@@ -61,6 +61,8 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: textTheme.titleLarge?.copyWith(
           fontFamily: headingFont,
+          fontSize: 22, // Figma page titles are 24; 22 leaves room for app bar actions
+          letterSpacing: -0.3,
           fontWeight: FontWeight.w800,
           color: AppColors.navy,
         ),
