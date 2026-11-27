@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -85,18 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    SizedBox(
-                      height: 240,
-                      child: Image.asset(
-                        'assets/images/${p.asset}.png',
-                        errorBuilder: (_, _, _) => Container(
-                          width: 220,
-                          height: 220,
-                          decoration: const BoxDecoration(color: AppColors.mint, shape: BoxShape.circle),
-                          child: Icon(p.icon, size: 96, color: AppColors.primary),
-                        ),
-                      ),
-                    ),
+                    SizedBox(height: 240, width: 260, child: _Illustration(index: i, icon: p.icon)),
                     const SizedBox(height: 32),
                     Text(p.title, textAlign: TextAlign.center, style: t.headlineSmall),
                     const SizedBox(height: 12),
@@ -139,5 +129,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ]),
       ),
     );
+  }
+}
+
+/// Onboarding scenes composed from the design team's mascots and props
+/// (no dedicated onboarding illustrations were provided).
+class _Illustration extends StatelessWidget {
+  const _Illustration({required this.index, required this.icon});
+  final int index;
+  final IconData icon;
+
+  Widget _svg(String name, double size) => SvgPicture.asset('assets/images/$name.svg', width: size, height: size);
+
+  @override
+  Widget build(BuildContext context) {
+    final items = switch (index) {
+      // Donate: the three ecosystems you can fund.
+      0 => [
+          Positioned(left: 0, bottom: 20, child: _svg('pet_coral_blue', 100)),
+          Positioned(right: 0, bottom: 20, child: _svg('pet_tree', 110)),
+          Positioned(left: 80, top: 10, child: _svg('pet_coral_green', 96)),
+        ],
+      // Track: a progress card with the coral growing.
+      1 => [
+          Positioned(left: 8, bottom: 40, child: _svg('pet_coral_pink', 56)),
+          Positioned(left: 72, bottom: 40, child: _svg('pet_coral_pink', 80)),
+          Positioned(right: 4, bottom: 40, child: _svg('pet_coral_pink', 108)),
+          Positioned(left: 20, top: 20, child: Icon(icon, size: 40, color: AppColors.accent)),
+          Positioned(right: 30, top: 24, child: _svg('deco_bubble', 26)),
+        ],
+      // Pet: the buddy with its reef props.
+      _ => [
+          Positioned(left: 55, bottom: 18, child: _svg('pet_coral_blue', 150)),
+          Positioned(left: 0, bottom: 14, child: _svg('deco_starfish', 54)),
+          Positioned(right: 0, bottom: 14, child: _svg('deco_shell', 48)),
+          Positioned(right: 22, top: 16, child: _svg('deco_bubble_shadow', 30)),
+          Positioned(left: 26, top: 40, child: _svg('deco_bubble', 20)),
+        ],
+    };
+    return Stack(clipBehavior: Clip.none, children: [
+      Positioned.fill(
+        child: Container(decoration: const BoxDecoration(color: AppColors.mint, shape: BoxShape.circle)),
+      ),
+      ...items,
+    ]);
   }
 }
