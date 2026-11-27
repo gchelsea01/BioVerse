@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../models/conservation.dart';
 import '../../models/gamification.dart';
+import '../theme/app_colors.dart';
 
 /// Reef species that use the pink coral mascot; other ocean species use blue.
 const _pinkSpecies = {'clownfish', 'seahorse'};
@@ -56,7 +57,7 @@ class HabitatBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = switch (ecosystem) {
-      Ecosystem.coral => [const Color(0xFFDAF4F1), const Color(0xFFB9E4EC)],
+      Ecosystem.coral => AppColors.petGradient, // Figma "Ver Coral Pet" card
       Ecosystem.mangrove => [const Color(0xFFDAF4F1), const Color(0xFFC4E5D2)],
       Ecosystem.tree => [const Color(0xFFE9F6E4), const Color(0xFFCDE7C1)],
     };
@@ -79,7 +80,7 @@ class HabitatBackground extends StatelessWidget {
         ],
     };
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(10),
       child: Stack(children: [
         Positioned.fill(
           child: DecoratedBox(
