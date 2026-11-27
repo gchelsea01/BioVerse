@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bioverse_app/core/widgets/pet_art.dart';
 import 'package:bioverse_app/models/conservation.dart';
 import 'package:bioverse_app/models/gamification.dart';
 import 'package:bioverse_app/models/json.dart';
@@ -40,6 +41,9 @@ void main() {
   test('species map to ocean, mangrove, and forest habitats', () {
     final species = list(fixture('species'), PetSpecies.fromJson);
     expect(species.map((s) => s.ecosystem).toSet(), containsAll(Ecosystem.values));
+    for (final s in species) {
+      expect(File(petAssetFor(s.id)).existsSync(), isTrue, reason: '${s.id} -> ${petAssetFor(s.id)}');
+    }
   });
 
   test('stats, submissions, notifications, news, streak parse', () {

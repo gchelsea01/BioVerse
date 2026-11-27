@@ -6,7 +6,6 @@ import '../../core/utils/format.dart';
 import '../../core/widgets/async_view.dart';
 import '../../core/widgets/badges.dart';
 import '../../core/widgets/common.dart';
-import '../../core/widgets/net_image.dart';
 import '../../core/widgets/pet_art.dart';
 import '../../models/conservation.dart';
 import '../../models/gamification.dart';
@@ -122,9 +121,8 @@ class _AdoptFormState extends State<_AdoptForm> {
               leading: SizedBox(
                 width: 48,
                 height: 48,
-                child: s.imageUrl != null
-                    ? NetImage(s.imageUrl, width: 48, height: 48, icon: s.ecosystem.icon)
-                    : PetArt(species: s.id, stage: GrowthStage.hatchling, size: 48),
+                // Mascot art, not the API photo (those don't match the species yet).
+                child: PetArt(species: s.id, stage: GrowthStage.adult, size: 48),
               ),
               title: Wrap(spacing: 6, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
                 Text(s.name, style: const TextStyle(fontWeight: FontWeight.w700)),

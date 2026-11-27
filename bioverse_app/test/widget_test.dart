@@ -36,7 +36,7 @@ void main() {
     expect(Fmt.money(3.2, 'USD'), '\$3.20');
   });
 
-  testWidgets('placeholder pet renders without assets', (tester) async {
+  testWidgets('pet mascot renders for every ecosystem', (tester) async {
     await tester.pumpWidget(MaterialApp(
       theme: AppTheme.light(),
       home: const Scaffold(body: PetArt(species: 'tree', stage: GrowthStage.adult)),
