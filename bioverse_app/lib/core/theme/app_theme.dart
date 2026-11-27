@@ -7,6 +7,10 @@ class AppTheme {
 
   static const radius = 14.0;
 
+  /// Design system fonts: Nunito for headings, Inter for everything else.
+  static const bodyFont = 'Inter';
+  static const headingFont = 'Nunito';
+
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
@@ -16,19 +20,25 @@ class AppTheme {
       error: AppColors.danger,
     );
 
-    final base = ThemeData(useMaterial3: true, colorScheme: scheme);
+    final base = ThemeData(useMaterial3: true, colorScheme: scheme, fontFamily: bodyFont);
     final textTheme = base.textTheme.apply(
       bodyColor: AppColors.text,
       displayColor: AppColors.text,
     );
+    TextStyle? heading(TextStyle? s, FontWeight w) => s?.copyWith(fontFamily: headingFont, fontWeight: w);
 
     final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       textTheme: textTheme.copyWith(
-        headlineSmall: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        titleLarge: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        displayLarge: heading(textTheme.displayLarge, FontWeight.w800),
+        displayMedium: heading(textTheme.displayMedium, FontWeight.w800),
+        displaySmall: heading(textTheme.displaySmall, FontWeight.w800),
+        headlineLarge: heading(textTheme.headlineLarge, FontWeight.w800),
+        headlineMedium: heading(textTheme.headlineMedium, FontWeight.w800),
+        headlineSmall: heading(textTheme.headlineSmall, FontWeight.w800),
+        titleLarge: heading(textTheme.titleLarge, FontWeight.w800),
         titleMedium: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
       ),
       appBarTheme: AppBarTheme(
@@ -38,7 +48,8 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w700,
+          fontFamily: headingFont,
+          fontWeight: FontWeight.w800,
           color: AppColors.navy,
         ),
       ),
