@@ -16,14 +16,19 @@ class BrandMark extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = light ? Colors.white : AppColors.navy;
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      Image.asset(
-        'assets/images/logo_mark.png',
-        height: size,
-        errorBuilder: (_, _, _) => Icon(Icons.all_inclusive_rounded, size: size, color: light ? Colors.white : AppColors.primary),
+      Container(
+        // The mark is teal; on dark/teal backgrounds give it a white badge.
+        padding: light ? EdgeInsets.all(size * 0.15) : EdgeInsets.zero,
+        decoration: light ? BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(size * 0.3)) : null,
+        child: Image.asset(
+          'assets/images/logo_mark.png',
+          height: size,
+          errorBuilder: (_, _, _) => Icon(Icons.all_inclusive_rounded, size: size, color: light ? Colors.white : AppColors.primary),
+        ),
       ),
       if (showName) ...[
         SizedBox(width: size * 0.3),
-        Text('BioVerse', style: TextStyle(fontSize: size * 0.8, fontWeight: FontWeight.w800, color: color)),
+        Text('BioVerse', style: TextStyle(fontFamily: 'Nunito', fontSize: size * 0.8, fontWeight: FontWeight.w800, color: color)),
       ],
     ]);
   }
